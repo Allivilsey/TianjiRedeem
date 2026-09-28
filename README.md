@@ -11,6 +11,7 @@ mvn clean verify
 ```
 
 将 `target/TianjiRedeem-1.0.0.jar` 放入 Paper 26.2 的 `plugins` 目录，启动服务器。
+命令使用 Lamp 4.0.0-rc.18；依赖已打包并重定位，无需单独安装。
 首次启动会生成 `plugins/TianjiRedeem/config.yml` 和 `messages.yml`。
 修改配置后重启服务器；配置不合法时插件停止启用，并在日志中指出文件及字段位置。
 
@@ -23,6 +24,7 @@ mvn clean verify
 
 唯一入口为 `/tianjiredeem`，没有别名。发券数量须为正整数，不受单次兑换 64 张的限制。
 玩家省略目标时发给自己；控制台必须指定在线玩家。发券或兑换时背包放不下的物品掉落在目标玩家脚边。
+Tab 补全采用 Lamp 原生规则：子命令前缀区分大小写（输入 `g` 补全 `give`），命令执行和玩家名称补全不区分大小写。
 
 ## 配置
 
@@ -49,6 +51,7 @@ ID 不得重复（不同写法的同一材料也算重复），必须对应可�
 
 若已有旧版配置，请将 `messages.yml` 中的 `voucher.name` 和 `voucher.lore` 移入 `config.yml` 的 `voucher` 节点，然后重启服务器。旧的 `voucher.material` 已不再读取，可删除。
 旧商品配置需要将每项的 `material` 值改写为上述 ID 列表；自定义商品 ID 和名称不再使用。
+升级到 Lamp 命令版本时，在已有 `messages.yml` 的 `command` 下补充 `failed: '&c命令执行失败，请联系管理员查看服务器日志。'`。
 
 ## 使用与识别规则
 

@@ -8,6 +8,7 @@ command:
   player-not-found: '&c玩家 {player} 不在线。'
   given: '&a已向 {player} 发放 {amount} 张兑换券。'
   received: '&a你收到了 {amount} 张兑换券。'
+  failed: '&c命令执行失败，请联系管理员查看服务器日志。'
 
 dialog:
   catalog-title: '建材兑换目录'

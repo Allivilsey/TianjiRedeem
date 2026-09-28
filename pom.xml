@@ -8,6 +8,7 @@
     <properties>
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <lamp.version>4.0.0-rc.18</lamp.version>
     </properties>
     <repositories>
         <repository>
@@ -16,6 +17,21 @@
         </repository>
     </repositories>
     <dependencies>
+        <dependency>
+            <groupId>io.github.revxrsal</groupId>
+            <artifactId>lamp.brigadier</artifactId>
+            <version>${lamp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.revxrsal</groupId>
+            <artifactId>lamp.common</artifactId>
+            <version>${lamp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.revxrsal</groupId>
+            <artifactId>lamp.bukkit</artifactId>
+            <version>${lamp.version}</version>
+        </dependency>
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
@@ -47,6 +63,27 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
+                <configuration><parameters>true</parameters></configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <relocations>
+                                <relocation>
+                                    <pattern>revxrsal</pattern>
+                                    <shadedPattern>org.tianjiserver.redeem.internal.revxrsal</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

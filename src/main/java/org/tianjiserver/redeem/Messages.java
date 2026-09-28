@@ -14,7 +14,7 @@ public final class Messages {
     private static final List<String> TEXT_KEYS = List.of(
             "command.usage", "command.player-only", "command.no-permission",
             "command.invalid-amount", "command.player-required", "command.player-not-found",
-            "command.given", "command.received", "dialog.catalog-title", "dialog.catalog-empty",
+            "command.given", "command.received", "command.failed", "dialog.catalog-title", "dialog.catalog-empty",
             "dialog.page", "dialog.previous", "dialog.next", "dialog.close", "dialog.redeem-title",
             "dialog.rate", "dialog.balance", "dialog.amount", "dialog.redeem", "dialog.back",
             "dialog.result-title", "dialog.success", "dialog.insufficient", "dialog.invalid-amount",

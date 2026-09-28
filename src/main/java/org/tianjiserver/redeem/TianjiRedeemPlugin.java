@@ -9,8 +9,12 @@ import java.util.Objects;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import revxrsal.commands.Lamp;
+import revxrsal.commands.bukkit.actor.BukkitCommandActor;
 
 public class TianjiRedeemPlugin extends JavaPlugin {
+    private Lamp<BukkitCommandActor> commands;
+
     @Override
     public void onEnable() {
         // Bundled text remains available for reporting an invalid messages.yml.
@@ -23,13 +27,18 @@ public class TianjiRedeemPlugin extends JavaPlugin {
             RedeemConfig config = RedeemConfig.load(readYaml("config.yml"));
             RedeemDialogs dialogs = new RedeemDialogs(this, config.products(), messages, new RedeemService());
             var voucher = Vouchers.create(config.voucherName(), config.voucherLore());
-            RedeemCommand executor = new RedeemCommand(getServer(), dialogs, voucher, messages);
-            var command = Objects.requireNonNull(getCommand("tianjiredeem"));
-            command.setExecutor(executor);
-            command.setTabCompleter(executor);
+            commands = new RedeemCommand(dialogs, voucher, messages).register(this);
         } catch (IllegalArgumentException error) {
             getLogger().severe(messages.plain("startup.invalid-config", Map.of("error", error.getMessage())));
             getServer().getPluginManager().disablePlugin(this);
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        if (commands != null) {
+            commands.unregisterAllCommands();
+            commands = null;
         }
     }
 

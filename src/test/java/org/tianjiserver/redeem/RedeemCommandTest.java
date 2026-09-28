@@ -2,13 +2,12 @@ package org.tianjiserver.redeem;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
+import revxrsal.commands.Lamp;
+import revxrsal.commands.bukkit.actor.BukkitCommandActor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,29 +27,29 @@ import static org.mockito.Mockito.*;
 class RedeemCommandTest {
     private ServerMock server;
     private PlayerMock player;
-    private Plugin plugin;
+    private JavaPlugin plugin;
     private Messages messages;
     private RedeemDialogs dialogs;
     private RedeemCommand command;
-    private final Command bukkitCommand = mock(Command.class);
+    private Lamp<BukkitCommandActor> lamp;
 
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin();
-        server.getPluginManager().addPermission(new Permission("tianjiredeem.use", PermissionDefault.TRUE));
-        server.getPluginManager().addPermission(new Permission("tianjiredeem.admin.give", PermissionDefault.OP));
+        plugin = MockBukkit.loadWith(CommandTestPlugin.class, getClass().getResourceAsStream("/plugin.yml"));
         player = server.addPlayer("Builder");
         messages = mock(Messages.class);
         when(messages.text(anyString())).thenAnswer(invocation -> Component.text((String) invocation.getArgument(0)));
         when(messages.text(anyString(), anyMap())).thenAnswer(invocation -> Component.text((String) invocation.getArgument(0)));
         dialogs = mock(RedeemDialogs.class);
         var voucher = Vouchers.create(Component.text("custom voucher"), List.of(Component.text("custom lore")));
-        command = new RedeemCommand(server, dialogs, voucher, messages);
+        command = new RedeemCommand(dialogs, voucher, messages);
+        lamp = command.register(plugin);
     }
 
     @AfterEach
     void tearDown() {
+        if (lamp != null) lamp.unregisterAllCommands();
         MockBukkit.unmock();
     }
 
@@ -58,6 +57,13 @@ class RedeemCommandTest {
     void playerWithUsePermissionOpensFirstCatalogPage() {
         assertTrue(run(player));
         verify(dialogs).openCatalog(player, 0);
+    }
+
+    @Test
+    void unexpectedFailureUsesConfiguredMessage() {
+        doThrow(new IllegalStateException("dialog unavailable")).when(dialogs).openCatalog(player, 0);
+        run(player);
+        assertEquals(Component.text("command.failed"), player.nextComponentMessage());
     }
 
     @Test
@@ -149,19 +155,24 @@ class RedeemCommandTest {
         assertEquals(List.of(), complete("give", "1", ""));
         player.addAttachment(plugin, "tianjiredeem.admin.give", true);
         assertEquals(List.of("give"), complete(""));
-        assertEquals(List.of("give"), complete("G"));
+        assertEquals(List.of("give"), complete("g"));
+        // Literal completion follows Lamp's native case-sensitive behavior.
+        assertEquals(List.of(), complete("G"));
         assertEquals(List.of(), complete("x"));
         assertEquals(List.of(), complete("give", ""));
         assertEquals(List.of("Alex", "Alice"), complete("give", "1", "a"));
+        assertEquals(List.of("Alex", "Alice"), complete("GIVE", "1", "A"));
         assertEquals(List.of(), complete("unknown", "1", ""));
         assertEquals(List.of(), complete("give", "1", "Builder", ""));
     }
 
     private boolean run(CommandSender sender, String... args) {
-        return command.onCommand(sender, bukkitCommand, "tianjiredeem", args);
+        return plugin.getCommand("tianjiredeem").execute(sender, "tianjiredeem", args);
     }
 
     private List<String> complete(String... args) {
-        return command.onTabComplete(player, bukkitCommand, "tianjiredeem", args);
+        return plugin.getCommand("tianjiredeem").tabComplete(player, "tianjiredeem", args);
     }
+
+    public static class CommandTestPlugin extends JavaPlugin {}
 }
