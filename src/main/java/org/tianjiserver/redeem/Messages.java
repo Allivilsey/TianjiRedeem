@@ -5,7 +5,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +12,7 @@ import java.util.Map;
 public final class Messages {
     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacyAmpersand();
     private static final List<String> TEXT_KEYS = List.of(
-            "voucher.name", "command.usage", "command.player-only", "command.no-permission",
+            "command.usage", "command.player-only", "command.no-permission",
             "command.invalid-amount", "command.player-required", "command.player-not-found",
             "command.given", "command.received", "dialog.catalog-title", "dialog.catalog-empty",
             "dialog.page", "dialog.previous", "dialog.next", "dialog.close", "dialog.redeem-title",
@@ -22,11 +21,9 @@ public final class Messages {
             "dialog.continue", "startup.invalid-config");
 
     private final Map<String, String> texts;
-    private final List<Component> voucherLore;
 
-    private Messages(Map<String, String> texts, List<Component> voucherLore) {
+    private Messages(Map<String, String> texts) {
         this.texts = Map.copyOf(texts);
-        this.voucherLore = List.copyOf(voucherLore);
     }
 
     public static Messages load(ConfigurationSection config) {
@@ -35,13 +32,7 @@ public final class Messages {
             if (!(config.get(key) instanceof String value)) throw invalid(key);
             texts.put(key, value);
         }
-        if (!(config.get("voucher.lore") instanceof List<?> entries)) throw invalid("voucher.lore");
-        var lore = new ArrayList<Component>();
-        for (int index = 0; index < entries.size(); index++) {
-            if (!(entries.get(index) instanceof String line)) throw invalid("voucher.lore[" + index + "]");
-            lore.add(LEGACY.deserialize(line));
-        }
-        return new Messages(texts, lore);
+        return new Messages(texts);
     }
 
     public Component text(String key) {
@@ -55,11 +46,6 @@ public final class Messages {
             message = message.replace("{" + entry.getKey() + "}", entry.getValue());
         }
         return LEGACY.deserialize(message);
-    }
-
-    public List<Component> lines(String key) {
-        if (!key.equals("voucher.lore")) throw invalid(key);
-        return voucherLore;
     }
 
     public String plain(String key, Map<String, String> replacements) {

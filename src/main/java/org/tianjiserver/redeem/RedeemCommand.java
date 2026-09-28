@@ -1,12 +1,12 @@
 package org.tianjiserver.redeem;
 
-import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Locale;
@@ -15,13 +15,13 @@ import java.util.Map;
 public final class RedeemCommand implements CommandExecutor, TabCompleter {
     private final Server server;
     private final RedeemDialogs dialogs;
-    private final Material voucherMaterial;
+    private final ItemStack voucher;
     private final Messages messages;
 
-    public RedeemCommand(Server server, RedeemDialogs dialogs, Material voucherMaterial, Messages messages) {
+    public RedeemCommand(Server server, RedeemDialogs dialogs, ItemStack voucher, Messages messages) {
         this.server = server;
         this.dialogs = dialogs;
-        this.voucherMaterial = voucherMaterial;
+        this.voucher = voucher;
         this.messages = messages;
     }
 
@@ -73,8 +73,7 @@ public final class RedeemCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(messages.text("command.player-required"));
             return true;
         }
-        ItemDelivery.give(target, Vouchers.create(voucherMaterial, messages.text("voucher.name"),
-                messages.lines("voucher.lore")), amount);
+        ItemDelivery.give(target, voucher, amount);
         var replacements = Map.of("player", target.getName(), "amount", Integer.toString(amount));
         sender.sendMessage(messages.text("command.given", replacements));
         if (!target.equals(sender)) target.sendMessage(messages.text("command.received", replacements));

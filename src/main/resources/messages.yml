@@ -1,9 +1,4 @@
 # 使用 & 颜色代码；花括号中的占位符由插件替换。
-voucher:
-  name: '&e[建材兑换券]'
-  lore:
-    - '&7输入命令/tianjiredeem打开兑换界面'
-
 command:
   usage: '&e用法：/tianjiredeem 或 /tianjiredeem give <amount> [player_name]'
   player-only: '&c只有玩家可以打开兑换目录。'

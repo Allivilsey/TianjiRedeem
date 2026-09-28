@@ -1,6 +1,9 @@
-# 修改后重启服务器生效。券的名称与描述在 messages.yml 中配置。
+# 修改后重启服务器生效。兑换券的全部外观在此配置，支持 & 颜色代码。
 voucher:
   material: FIELD_MASONED_BANNER_PATTERN
+  name: '&e[建材兑换券]'
+  lore:
+    - '&7输入命令/tianjiredeem打开兑换界面'
 
 # 商品 ID 必须唯一，名称不能为空，材质必须是可作为物品发放的方块。
 # 所有商品固定每张券兑换 64 个，不支持单独设置价格或数量。

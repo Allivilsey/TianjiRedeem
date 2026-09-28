@@ -26,11 +26,14 @@ mvn clean verify
 
 ## 配置
 
-`config.yml` 中维护券材质及商品列表：
+`config.yml` 中维护兑换券的材质、名称、描述及商品列表：
 
 ```yaml
 voucher:
   material: FIELD_MASONED_BANNER_PATTERN
+  name: '&e[建材兑换券]'
+  lore:
+    - '&7输入命令/tianjiredeem打开兑换界面'
 products:
   - id: stone
     name: 石头
@@ -43,9 +46,11 @@ products:
 商品 ID 不得重复，材质必须同时是方块和可发放物品。`products: []` 表示空目录。
 单件不可堆叠的方块也按每券 64 个兑换。商品没有独立价格或产物数量。
 
-`messages.yml` 包含按钮、界面、命令提示，以及 `voucher.name`、`voucher.lore`。
+`messages.yml` 包含按钮、界面及命令提示。兑换券外观统一由 `config.yml` 的 `voucher` 节点配置。
 支持 `&` 颜色代码；保留消息原有的 `{amount}` 等占位符。商品展示名称来自商品配置。
 券的材质、名称、描述只影响新发放的券，修改外观不会使已有券失效。
+
+若已有旧版配置，请将 `messages.yml` 中的 `voucher.name` 和 `voucher.lore` 移入 `config.yml` 的 `voucher` 节点，与 `material` 并列，然后重启服务器。
 
 ## 使用与识别规则
 

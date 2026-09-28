@@ -42,6 +42,30 @@ class PluginTest {
     }
 
     @Test
+    void givesVoucherAppearanceFromConfigInsteadOfMessages() throws Exception {
+        TianjiRedeemPlugin plugin = MockBukkit.load(TianjiRedeemPlugin.class);
+        server.getPluginManager().disablePlugin(plugin);
+        File configFile = new File(plugin.getDataFolder(), "config.yml");
+        var config = YamlConfiguration.loadConfiguration(configFile);
+        config.set("voucher.material", "PAPER");
+        config.set("voucher.name", "&e配置中的兑换券");
+        config.set("voucher.lore", java.util.List.of("&7第一行", "第二行"));
+        config.save(configFile);
+        server.getPluginManager().enablePlugin(plugin);
+        assertTrue(plugin.isEnabled());
+        var player = server.addPlayer();
+        player.setOp(true);
+        server.dispatchCommand(player, "tianjiredeem give 2");
+        var voucher = player.getInventory().getItem(0);
+        var legacy = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand();
+        assertEquals(org.bukkit.Material.PAPER, voucher.getType());
+        assertEquals(legacy.deserialize("&e配置中的兑换券"), voucher.getItemMeta().displayName());
+        assertEquals(java.util.List.of(legacy.deserialize("&7第一行"), legacy.deserialize("第二行")),
+                voucher.getItemMeta().lore());
+        assertEquals(2, Vouchers.count(player.getInventory()));
+    }
+
+    @Test
     void malformedConfigDisablesPluginInsteadOfUsingDefaults() throws Exception {
         TianjiRedeemPlugin plugin = MockBukkit.load(TianjiRedeemPlugin.class);
         server.getPluginManager().disablePlugin(plugin);

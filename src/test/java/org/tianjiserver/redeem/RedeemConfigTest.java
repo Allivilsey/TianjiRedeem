@@ -82,6 +82,30 @@ class RedeemConfigTest {
     }
 
     @Test
+    void rejectsInvalidVoucherAppearanceAtItsConfigPath() throws Exception {
+        var config = yaml("voucher: {material: PAPER}\nproducts: []");
+        config.set("voucher.name", 123);
+        assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
+                .getMessage().contains("config.yml: voucher.name"));
+        config.set("voucher.name", "测试券");
+        config.set("voucher.lore", java.util.List.of("line", 123));
+        assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
+                .getMessage().contains("config.yml: voucher.lore[1]"));
+        config.set("voucher.lore", "not-a-list");
+        assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
+                .getMessage().contains("config.yml: voucher.lore"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"voucher.name", "voucher.lore"})
+    void requiresVoucherAppearanceInConfig(String path) throws Exception {
+        var config = yaml("voucher: {material: PAPER}\nproducts: []");
+        config.set(path, null);
+        assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
+                .getMessage().contains("config.yml: " + path));
+    }
+
+    @Test
     void bundledConfigurationIsValid() {
         try (var stream = getClass().getResourceAsStream("/config.yml")) {
             assertNotNull(stream);
@@ -97,6 +121,8 @@ class RedeemConfigTest {
     private static YamlConfiguration yaml(String source) throws Exception {
         var configuration = new YamlConfiguration();
         configuration.loadFromString(source);
+        configuration.set("voucher.name", "测试券");
+        configuration.set("voucher.lore", java.util.List.of("测试描述"));
         return configuration;
     }
 }
