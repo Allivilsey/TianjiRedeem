@@ -21,8 +21,6 @@ class RedeemConfigTest {
     @Test
     void loadsVoucherAndProductsInConfiguredOrder() throws Exception {
         var config = RedeemConfig.load(yaml("""
-                voucher:
-                  material: FIELD_MASONED_BANNER_PATTERN
                 products:
                   - id: stone
                     name: 石头
@@ -31,16 +29,14 @@ class RedeemConfigTest {
                     name: 潜影盒
                     material: SHULKER_BOX
                 """));
-        assertEquals(Material.FIELD_MASONED_BANNER_PATTERN, config.voucherMaterial());
         assertEquals(new Product("stone", "石头", Material.STONE), config.products().getFirst());
         assertEquals(Material.SHULKER_BOX, config.products().get(1).material());
         assertThrows(UnsupportedOperationException.class, () -> config.products().clear());
     }
 
     @Test
-    void permitsEmptyCatalogAndNonBlockVoucherMaterial() throws Exception {
-        var config = RedeemConfig.load(yaml("voucher: {material: PAPER}\nproducts: []"));
-        assertEquals(Material.PAPER, config.voucherMaterial());
+    void permitsEmptyCatalogWithoutVoucherMaterial() throws Exception {
+        var config = RedeemConfig.load(yaml("products: []"));
         assertTrue(config.products().isEmpty());
     }
 
@@ -54,9 +50,9 @@ class RedeemConfigTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"voucher: {material: WATER}\nproducts: []", "voucher: {material: AIR}\nproducts: []", "voucher: {}\nproducts: []"})
-    void reportsVoucherMaterialPath(String source) throws Exception {
-        var error = assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(yaml(source)));
-        assertTrue(error.getMessage().contains("config.yml: voucher.material"));
+    void ignoresObsoleteVoucherMaterial(String source) throws Exception {
+        var config = yaml(source);
+        assertDoesNotThrow(() -> RedeemConfig.load(config));
     }
 
     @Test
@@ -111,7 +107,7 @@ class RedeemConfigTest {
             assertNotNull(stream);
             var yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
             var config = RedeemConfig.load(yaml);
-            assertEquals(Material.FIELD_MASONED_BANNER_PATTERN, config.voucherMaterial());
+            assertFalse(yaml.contains("voucher.material"));
             assertFalse(config.products().isEmpty());
         } catch (java.io.IOException e) {
             throw new AssertionError(e);

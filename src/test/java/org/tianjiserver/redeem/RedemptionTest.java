@@ -38,8 +38,10 @@ class RedemptionTest {
     void createsVoucherWithConfiguredAppearanceAndByteOneMarker() {
         Component name = Component.text("custom voucher");
         List<Component> lore = List.of(Component.text("custom lore"));
-        ItemStack item = Vouchers.create(Material.PAPER, name, lore);
-        assertEquals(Material.PAPER, item.getType());
+        ItemStack item = Vouchers.create(name, lore);
+        assertEquals(Material.FIELD_MASONED_BANNER_PATTERN, item.getType());
+        assertEquals(64, item.getMaxStackSize());
+        assertTrue(item.getItemMeta().hasMaxStackSize());
         assertEquals(name, item.getItemMeta().displayName());
         assertEquals(lore, item.getItemMeta().lore());
         assertEquals((byte) 1, item.getPersistentDataContainer().get(Vouchers.KEY, PersistentDataType.BYTE));

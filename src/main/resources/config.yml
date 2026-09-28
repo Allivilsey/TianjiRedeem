@@ -1,6 +1,5 @@
-# 修改后重启服务器生效。兑换券的全部外观在此配置，支持 & 颜色代码。
+# 修改后重启服务器生效。券固定为砖纹旗帜图案，最多堆叠 64 张；名称和描述支持 & 颜色代码。
 voucher:
-  material: FIELD_MASONED_BANNER_PATTERN
   name: '&e[建材兑换券]'
   lore:
     - '&7输入命令/tianjiredeem打开兑换界面'

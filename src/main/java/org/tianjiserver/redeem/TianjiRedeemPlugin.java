@@ -22,7 +22,7 @@ public class TianjiRedeemPlugin extends JavaPlugin {
             messages = Messages.load(readYaml("messages.yml"));
             RedeemConfig config = RedeemConfig.load(readYaml("config.yml"));
             RedeemDialogs dialogs = new RedeemDialogs(this, config.products(), messages, new RedeemService());
-            var voucher = Vouchers.create(config.voucherMaterial(), config.voucherName(), config.voucherLore());
+            var voucher = Vouchers.create(config.voucherName(), config.voucherLore());
             RedeemCommand executor = new RedeemCommand(getServer(), dialogs, voucher, messages);
             var command = Objects.requireNonNull(getCommand("tianjiredeem"));
             command.setExecutor(executor);

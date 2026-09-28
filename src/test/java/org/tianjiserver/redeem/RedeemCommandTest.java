@@ -45,7 +45,7 @@ class RedeemCommandTest {
         when(messages.text(anyString())).thenAnswer(invocation -> Component.text((String) invocation.getArgument(0)));
         when(messages.text(anyString(), anyMap())).thenAnswer(invocation -> Component.text((String) invocation.getArgument(0)));
         dialogs = mock(RedeemDialogs.class);
-        var voucher = Vouchers.create(Material.PAPER, Component.text("custom voucher"), List.of(Component.text("custom lore")));
+        var voucher = Vouchers.create(Component.text("custom voucher"), List.of(Component.text("custom lore")));
         command = new RedeemCommand(server, dialogs, voucher, messages);
     }
 
@@ -82,7 +82,7 @@ class RedeemCommandTest {
         assertEquals(Component.text("command.given"), player.nextComponentMessage());
         assertNull(player.nextComponentMessage());
         verify(messages).text("command.given", Map.of("player", "Builder", "amount", "65"));
-        assertEquals(Material.PAPER, player.getInventory().getItem(0).getType());
+        assertEquals(Material.FIELD_MASONED_BANNER_PATTERN, player.getInventory().getItem(0).getType());
         assertEquals(Component.text("custom voucher"), player.getInventory().getItem(0).getItemMeta().displayName());
         assertEquals(List.of(Component.text("custom lore")), player.getInventory().getItem(0).getItemMeta().lore());
     }

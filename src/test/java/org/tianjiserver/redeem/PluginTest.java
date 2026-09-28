@@ -39,6 +39,11 @@ class PluginTest {
         int dropped = player.getWorld().getEntities().stream().filter(Item.class::isInstance).map(Item.class::cast)
                 .map(Item::getItemStack).filter(Vouchers::isVoucher).mapToInt(org.bukkit.inventory.ItemStack::getAmount).sum();
         assertEquals(65, held + dropped);
+        assertEquals(64, player.getInventory().getItem(0).getAmount());
+        assertEquals(1, player.getInventory().getItem(1).getAmount());
+        assertEquals(0, dropped);
+        server.dispatchCommand(player, "tianjiredeem give 1");
+        assertEquals(2, player.getInventory().getItem(1).getAmount());
     }
 
     @Test
@@ -58,7 +63,7 @@ class PluginTest {
         server.dispatchCommand(player, "tianjiredeem give 2");
         var voucher = player.getInventory().getItem(0);
         var legacy = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand();
-        assertEquals(org.bukkit.Material.PAPER, voucher.getType());
+        assertEquals(org.bukkit.Material.FIELD_MASONED_BANNER_PATTERN, voucher.getType());
         assertEquals(legacy.deserialize("&e配置中的兑换券"), voucher.getItemMeta().displayName());
         assertEquals(java.util.List.of(legacy.deserialize("&7第一行"), legacy.deserialize("第二行")),
                 voucher.getItemMeta().lore());
@@ -75,12 +80,11 @@ class PluginTest {
     }
 
     @Test
-    void invalidMaterialDisablesPlugin() throws Exception {
+    void invalidProductMaterialDisablesPlugin() throws Exception {
         TianjiRedeemPlugin plugin = MockBukkit.load(TianjiRedeemPlugin.class);
         server.getPluginManager().disablePlugin(plugin);
-        YamlConfiguration config = new YamlConfiguration();
-        config.set("voucher.material", "AIR");
-        config.set("products", java.util.List.of());
+        var config = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "config.yml"));
+        config.set("products", java.util.List.of(java.util.Map.of("id", "bad", "name", "空气", "material", "AIR")));
         config.save(new File(plugin.getDataFolder(), "config.yml"));
         server.getPluginManager().enablePlugin(plugin);
         assertFalse(plugin.isEnabled());

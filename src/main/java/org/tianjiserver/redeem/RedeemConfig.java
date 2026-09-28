@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-public record RedeemConfig(Material voucherMaterial, Component voucherName,
+public record RedeemConfig(Component voucherName,
                            List<Component> voucherLore, List<Product> products) {
     public RedeemConfig {
         voucherLore = List.copyOf(voucherLore);
@@ -18,7 +18,6 @@ public record RedeemConfig(Material voucherMaterial, Component voucherName,
     }
 
     public static RedeemConfig load(ConfigurationSection config) {
-        Material voucher = material(config.get("voucher.material"), "voucher.material", false);
         var legacy = LegacyComponentSerializer.legacyAmpersand();
         if (!(config.get("voucher.name") instanceof String name)) throw invalid("voucher.name");
         Component voucherName = legacy.deserialize(name);
@@ -38,15 +37,15 @@ public record RedeemConfig(Material voucherMaterial, Component voucherName,
             String id = string(entry.get("id"), path + ".id");
             if (!ids.add(id)) throw invalid(path + ".id");
             String productName = string(entry.get("name"), path + ".name");
-            Material material = material(entry.get("material"), path + ".material", true);
+            Material material = material(entry.get("material"), path + ".material");
             products.add(new Product(id, productName, material));
         }
-        return new RedeemConfig(voucher, voucherName, voucherLore, products);
+        return new RedeemConfig(voucherName, voucherLore, products);
     }
 
-    private static Material material(Object value, String path, boolean block) {
+    private static Material material(Object value, String path) {
         Material material = Material.matchMaterial(string(value, path));
-        if (material == null || material.isAir() || !material.isItem() || (block && !material.isBlock())) throw invalid(path);
+        if (material == null || material.isAir() || !material.isItem() || !material.isBlock()) throw invalid(path);
         return material;
     }
 

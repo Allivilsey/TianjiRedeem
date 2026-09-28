@@ -14,9 +14,10 @@ public final class Vouchers {
 
     private Vouchers() {}
 
-    public static ItemStack create(Material material, Component name, List<Component> lore) {
-        ItemStack voucher = new ItemStack(material);
+    public static ItemStack create(Component name, List<Component> lore) {
+        ItemStack voucher = new ItemStack(Material.FIELD_MASONED_BANNER_PATTERN);
         voucher.editMeta(meta -> {
+            meta.setMaxStackSize(64);
             meta.displayName(name);
             meta.lore(lore);
             meta.getPersistentDataContainer().set(KEY, PersistentDataType.BYTE, (byte) 1);
