@@ -84,7 +84,7 @@ class PluginTest {
         TianjiRedeemPlugin plugin = MockBukkit.load(TianjiRedeemPlugin.class);
         server.getPluginManager().disablePlugin(plugin);
         var config = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "config.yml"));
-        config.set("products", java.util.List.of(java.util.Map.of("id", "bad", "name", "空气", "material", "AIR")));
+        config.set("products", java.util.List.of("minecraft:air"));
         config.save(new File(plugin.getDataFolder(), "config.yml"));
         server.getPluginManager().enablePlugin(plugin);
         assertFalse(plugin.isEnabled());

@@ -8,10 +8,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 public record RedeemConfig(Component voucherName,
-                           List<Component> voucherLore, List<Product> products) {
+                           List<Component> voucherLore, List<Material> products) {
     public RedeemConfig {
         voucherLore = List.copyOf(voucherLore);
         products = List.copyOf(products);
@@ -29,16 +28,13 @@ public record RedeemConfig(Component voucherName,
         }
         Object configuredProducts = config.get("products");
         if (!(configuredProducts instanceof List<?> entries)) throw invalid("products");
-        var products = new ArrayList<Product>();
-        var ids = new HashSet<String>();
+        var products = new ArrayList<Material>();
+        var materials = new HashSet<Material>();
         for (int index = 0; index < entries.size(); index++) {
             String path = "products[" + index + "]";
-            if (!(entries.get(index) instanceof Map<?, ?> entry)) throw invalid(path);
-            String id = string(entry.get("id"), path + ".id");
-            if (!ids.add(id)) throw invalid(path + ".id");
-            String productName = string(entry.get("name"), path + ".name");
-            Material material = material(entry.get("material"), path + ".material");
-            products.add(new Product(id, productName, material));
+            Material material = material(entries.get(index), path);
+            if (!materials.add(material)) throw invalid(path);
+            products.add(material);
         }
         return new RedeemConfig(voucherName, voucherLore, products);
     }

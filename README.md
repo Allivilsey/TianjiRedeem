@@ -34,22 +34,21 @@ voucher:
   lore:
     - '&7输入命令/tianjiredeem打开兑换界面'
 products:
-  - id: stone
-    name: 石头
-    material: STONE
-  - id: oak_planks
-    name: 橡木木板
-    material: OAK_PLANKS
+  - minecraft:stone
+  - minecraft:oak_planks
 ```
 
-商品 ID 不得重复，材质必须同时是方块和可发放物品。`products: []` 表示空目录。
+`products` 只填写原版物品 ID，`minecraft:` 前缀可省略，例如 `stone`；也接受 `STONE`。
+ID 不得重复（不同写法的同一材料也算重复），必须对应可发放的方块。`products: []` 表示空目录。
+目录、兑换页和结果页使用该物品的原版名称，随玩家客户端语言显示；预览和产物均由同一个 ID 决定，无需填写 `id`、`name` 或 `material` 字段。
 单件不可堆叠的方块也按每券 64 个兑换。商品没有独立价格或产物数量。
 
 `messages.yml` 包含按钮、界面及命令提示。兑换券外观统一由 `config.yml` 的 `voucher` 节点配置。
-支持 `&` 颜色代码；保留消息原有的 `{amount}` 等占位符。商品展示名称来自商品配置。
+支持 `&` 颜色代码；保留消息原有的 `{amount}` 等占位符。`{product}` 显示原版物品名称。
 名称和描述只影响新发放的券，修改外观不会使已有券失效。旧券仍可兑换，但不会自动修改其堆叠上限；新券最多堆叠 64 张，相同数据的券才能合并。
 
 若已有旧版配置，请将 `messages.yml` 中的 `voucher.name` 和 `voucher.lore` 移入 `config.yml` 的 `voucher` 节点，然后重启服务器。旧的 `voucher.material` 已不再读取，可删除。
+旧商品配置需要将每项的 `material` 值改写为上述 ID 列表；自定义商品 ID 和名称不再使用。
 
 ## 使用与识别规则
 

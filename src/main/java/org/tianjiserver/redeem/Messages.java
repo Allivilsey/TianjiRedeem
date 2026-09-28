@@ -40,12 +40,16 @@ public final class Messages {
     }
 
     public Component text(String key, Map<String, String> replacements) {
+        var components = new HashMap<String, Component>();
+        replacements.forEach((name, value) -> components.put(name, Component.text(value)));
+        return textComponents(key, components);
+    }
+
+    public Component textComponents(String key, Map<String, Component> replacements) {
         String message = texts.get(key);
         if (message == null) throw invalid(key);
-        for (var entry : replacements.entrySet()) {
-            message = message.replace("{" + entry.getKey() + "}", entry.getValue());
-        }
-        return LEGACY.deserialize(message);
+        return LEGACY.deserialize(message).replaceText(builder -> builder.match("\\{([^{}]+)}")
+                .replacement((match, original) -> replacements.getOrDefault(match.group(1), original.build())));
     }
 
     public String plain(String key, Map<String, String> replacements) {

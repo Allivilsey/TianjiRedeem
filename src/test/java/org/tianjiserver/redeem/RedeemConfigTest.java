@@ -22,15 +22,11 @@ class RedeemConfigTest {
     void loadsVoucherAndProductsInConfiguredOrder() throws Exception {
         var config = RedeemConfig.load(yaml("""
                 products:
-                  - id: stone
-                    name: 石头
-                    material: STONE
-                  - id: shulker
-                    name: 潜影盒
-                    material: SHULKER_BOX
+                  - minecraft:stone
+                  - shulker_box
                 """));
-        assertEquals(new Product("stone", "石头", Material.STONE), config.products().getFirst());
-        assertEquals(Material.SHULKER_BOX, config.products().get(1).material());
+        assertEquals(Material.STONE, config.products().getFirst());
+        assertEquals(Material.SHULKER_BOX, config.products().get(1));
         assertThrows(UnsupportedOperationException.class, () -> config.products().clear());
     }
 
@@ -43,9 +39,9 @@ class RedeemConfigTest {
     @ParameterizedTest
     @ValueSource(strings = {"DIAMOND_SWORD", "WATER", "AIR", "NOT_A_MATERIAL"})
     void rejectsProductsThatCannotBeGivenAsBlocks(String material) throws Exception {
-        var config = yaml("voucher: {material: PAPER}\nproducts:\n  - {id: a, name: A, material: " + material + "}");
+        var config = yaml("products:\n  - " + material);
         var error = assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config));
-        assertTrue(error.getMessage().contains("config.yml: products[0].material"));
+        assertTrue(error.getMessage().contains("config.yml: products[0]"));
     }
 
     @ParameterizedTest
@@ -60,18 +56,18 @@ class RedeemConfigTest {
         var config = yaml("""
                 voucher: {material: PAPER}
                 products:
-                  - {id: stone, name: 石头, material: STONE}
-                  - {id: stone, name: 草方块, material: GRASS_BLOCK}
+                  - minecraft:stone
+                  - STONE
                 """);
         var error = assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config));
-        assertTrue(error.getMessage().contains("config.yml: products[1].id"));
+        assertTrue(error.getMessage().contains("config.yml: products[1]"));
     }
 
     @Test
     void rejectsMissingOrWronglyTypedFieldsAtTheirLocation() throws Exception {
-        var config = yaml("voucher: {material: PAPER}\nproducts:\n  - {id: a, material: STONE}");
+        var config = yaml("products:\n  - {id: stone, material: STONE}");
         assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
-                .getMessage().contains("config.yml: products[0].name"));
+                .getMessage().contains("config.yml: products[0]"));
         config.set("products", "not-a-list");
         assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
                 .getMessage().contains("config.yml: products"));

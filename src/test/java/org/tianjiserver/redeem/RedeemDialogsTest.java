@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -67,6 +66,7 @@ class RedeemDialogsTest {
         messages = mock(Messages.class);
         when(messages.text(anyString())).thenAnswer(call -> Component.text(call.getArgument(0, String.class)));
         when(messages.text(anyString(), anyMap())).thenAnswer(call -> Component.text(call.getArgument(0, String.class)));
+        when(messages.textComponents(anyString(), anyMap())).thenAnswer(call -> Component.text(call.getArgument(0, String.class)));
         service = mock(RedeemService.class);
 
         // MockBukkit has no dynamic DialogInstancesProvider. Capture only the Paper boundary.
@@ -127,13 +127,14 @@ class RedeemDialogsTest {
 
     @Test
     void catalogPaginatesTwelveProductsAndKeepsLastPageReachable() {
-        var products = IntStream.range(0, 13)
-            .mapToObj(i -> new Product("item" + i, "Item " + i, Material.STONE)).toList();
+        var products = List.of(Material.STONE, Material.DIRT, Material.GRASS_BLOCK, Material.GLASS,
+            Material.OAK_PLANKS, Material.SPRUCE_PLANKS, Material.BIRCH_PLANKS, Material.COBBLESTONE,
+            Material.SAND, Material.GRAVEL, Material.BRICKS, Material.STONE_BRICKS, Material.SHULKER_BOX);
         new RedeemDialogs(plugin, products, messages, service).openCatalog(player, 0);
-        assertEquals(12, buttons.stream().filter(button -> label(button).startsWith("Item ")).count());
+        assertEquals(12, buttons.stream().filter(button -> button.label() instanceof net.kyori.adventure.text.TranslatableComponent).count());
         assertFalse(hasButton("dialog.previous"));
         click("dialog.next", null, player);
-        assertTrue(hasButton("Item 12"));
+        assertTrue(hasButton(Material.SHULKER_BOX.translationKey()));
         verify(messages).text("dialog.page", Map.of("page", "2", "pages", "2"));
         click("dialog.previous", null, player);
         verify(messages, times(2)).text("dialog.page", Map.of("page", "1", "pages", "2"));
@@ -147,6 +148,8 @@ class RedeemDialogsTest {
         verify(amountInput).initial(1F);
         verify(amountInput).step(1F);
         verify(messages).text("dialog.balance", Map.of("amount", "0"));
+        verify(messages).textComponents("dialog.redeem-title",
+            Map.of("product", Component.translatable(Material.STONE.translationKey())));
     }
 
     @Test
@@ -155,7 +158,8 @@ class RedeemDialogsTest {
         openProduct();
         click("dialog.redeem", 64F, player);
         verify(service).redeem(player, Material.STONE, 64);
-        verify(messages).text("dialog.success", Map.of("product", "Stone", "amount", "64", "count", "4096"));
+        verify(messages).textComponents("dialog.success", Map.of("product", Component.translatable(Material.STONE.translationKey()),
+            "amount", Component.text(64), "count", Component.text(4096)));
         click("dialog.continue", null, player);
         verify(provider, times(2)).numberRangeBuilder(eq("amount"), any(), eq(1F), eq(64F));
         click("dialog.back", null, player);
@@ -167,8 +171,8 @@ class RedeemDialogsTest {
         openProduct();
         click("dialog.redeem", 1F, player);
         verify(service).redeem(player, Material.STONE, 1);
-        verify(messages).text(eq("dialog.insufficient"), anyMap());
-        verify(messages, never()).text(eq("dialog.success"), anyMap());
+        verify(messages).textComponents(eq("dialog.insufficient"), anyMap());
+        verify(messages, never()).textComponents(eq("dialog.success"), anyMap());
         assertTrue(hasButton("dialog.continue"));
     }
 
@@ -220,9 +224,9 @@ class RedeemDialogsTest {
 
     private void openProduct() {
         var dialogs = new RedeemDialogs(plugin,
-            List.of(new Product("stone", "Stone", Material.STONE)), messages, service);
+            List.of(Material.STONE), messages, service);
         dialogs.openCatalog(player, 0);
-        click("Stone", null, player);
+        click(Material.STONE.translationKey(), null, player);
     }
 
     private void click(String label, Float amount, Player actor) {
@@ -237,6 +241,9 @@ class RedeemDialogsTest {
     }
 
     private String label(ActionButton button) {
+        if (button.label() instanceof net.kyori.adventure.text.TranslatableComponent translated) {
+            return translated.key();
+        }
         return PlainTextComponentSerializer.plainText().serialize(button.label());
     }
 }

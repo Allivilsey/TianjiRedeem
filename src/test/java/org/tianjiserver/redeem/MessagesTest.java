@@ -12,6 +12,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MessagesTest {
     @Test
+    void preservesVanillaNameComponentsInsideMessages() {
+        var messages = Messages.load(defaults());
+        var product = net.kyori.adventure.text.Component.translatable("block.minecraft.stone");
+        var title = messages.textComponents("dialog.redeem-title", Map.of("product", product));
+        assertTrue(title.contains(product));
+        assertFalse(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
+                .serialize(title).contains("{product}"));
+    }
+
+    @Test
     void loadsLegacyColoredText() {
         var config = defaults();
         config.set("dialog.success", "&a使用 {amount} 张券兑换 {count} 个{product}。");

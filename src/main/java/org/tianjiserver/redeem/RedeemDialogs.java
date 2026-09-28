@@ -10,6 +10,7 @@ import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,11 +28,11 @@ public final class RedeemDialogs {
         .uses(1).lifetime(Duration.ofMinutes(10)).build();
 
     private final JavaPlugin plugin;
-    private final List<Product> products;
+    private final List<Material> products;
     private final Messages messages;
     private final RedeemService service;
 
-    public RedeemDialogs(JavaPlugin plugin, List<Product> products, Messages messages, RedeemService service) {
+    public RedeemDialogs(JavaPlugin plugin, List<Material> products, Messages messages, RedeemService service) {
         this.plugin = plugin;
         this.products = List.copyOf(products);
         this.messages = messages;
@@ -45,8 +46,8 @@ public final class RedeemDialogs {
         List<ActionButton> actions = new ArrayList<>();
         int end = Math.min(products.size(), (current + 1) * PAGE_SIZE);
         for (int i = current * PAGE_SIZE; i < end; i++) {
-            Product product = products.get(i);
-            actions.add(button(player, Component.text(product.name()),
+            Material product = products.get(i);
+            actions.add(button(player, Component.translatable(product.translationKey()),
                 (actor, response) -> openProduct(actor, product, current)));
         }
         if (current > 0) {
@@ -68,14 +69,15 @@ public final class RedeemDialogs {
             .type(actions.isEmpty() ? DialogType.notice(close) : DialogType.multiAction(actions, close, 2))));
     }
 
-    private void openProduct(Player player, Product product, int page) {
+    private void openProduct(Player player, Material product, int page) {
         player.showDialog(Dialog.create(builder -> builder.empty()
-            .base(DialogBase.builder(messages.text("dialog.redeem-title", Map.of("product", product.name())))
+            .base(DialogBase.builder(messages.textComponents("dialog.redeem-title",
+                Map.of("product", Component.translatable(product.translationKey()))))
                 .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE)
                 .body(List.of(
                     DialogBody.plainMessage(messages.text("dialog.balance",
                         Map.of("amount", Integer.toString(Vouchers.count(player.getInventory()))))),
-                    DialogBody.item(new ItemStack(product.material()), null, true, true, 32, 32),
+                    DialogBody.item(new ItemStack(product), null, true, true, 32, 32),
                     DialogBody.plainMessage(messages.text("dialog.rate"))))
                 .inputs(List.of(DialogInput.numberRange("amount", messages.text("dialog.amount"), 1F, 64F)
                     .initial(1F).step(1F).build()))
@@ -85,21 +87,21 @@ public final class RedeemDialogs {
                 button(player, messages.text("dialog.back"), (actor, response) -> openCatalog(actor, page)), 1))));
     }
 
-    private void redeem(Player player, Product product, int page, DialogResponseView response) {
+    private void redeem(Player player, Material product, int page, DialogResponseView response) {
         Float value = response.getFloat("amount");
         if (value == null || !Float.isFinite(value) || value < 1 || value > 64 || value != Math.floor(value)) {
             openResult(player, product, page, messages.text("dialog.invalid-amount"));
             return;
         }
         int amount = value.intValue();
-        boolean redeemed = service.redeem(player, product.material(), amount);
-        Component result = messages.text(redeemed ? "dialog.success" : "dialog.insufficient", Map.of(
-            "product", product.name(), "amount", Integer.toString(amount),
-            "count", Integer.toString(redeemed ? 64 * amount : Vouchers.count(player.getInventory()))));
+        boolean redeemed = service.redeem(player, product, amount);
+        Component result = messages.textComponents(redeemed ? "dialog.success" : "dialog.insufficient", Map.of(
+            "product", Component.translatable(product.translationKey()), "amount", Component.text(amount),
+            "count", Component.text(redeemed ? 64 * amount : Vouchers.count(player.getInventory()))));
         openResult(player, product, page, result);
     }
 
-    private void openResult(Player player, Product product, int page, Component result) {
+    private void openResult(Player player, Material product, int page, Component result) {
         player.showDialog(Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(messages.text("dialog.result-title"))
                 .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE)

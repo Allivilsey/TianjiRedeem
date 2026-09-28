@@ -1,22 +1,13 @@
-# 修改后重启服务器生效。券固定为砖纹旗帜图案，最多堆叠 64 张；名称和描述支持 & 颜色代码。
+# 建材兑换券名称和描述。
 voucher:
   name: '&e[建材兑换券]'
   lore:
     - '&7输入命令/tianjiredeem打开兑换界面'
 
-# 商品 ID 必须唯一，名称不能为空，材质必须是可作为物品发放的方块。
-# 所有商品固定每张券兑换 64 个，不支持单独设置价格或数量。
-# 使用 products: [] 可暂时清空目录。
+# 这里用于配置可兑换方块的方块ID。
+# 使用 products: [] 可清空目录。
 products:
-  - id: stone
-    name: 石头
-    material: STONE
-  - id: stone_bricks
-    name: 石砖
-    material: STONE_BRICKS
-  - id: oak_planks
-    name: 橡木木板
-    material: OAK_PLANKS
-  - id: glass
-    name: 玻璃
-    material: GLASS
+  - minecraft:stone
+  - minecraft:stone_bricks
+  - minecraft:oak_planks
+  - minecraft:glass
