@@ -1,0 +1,37 @@
+# 使用 & 颜色代码；花括号中的占位符由插件替换。
+voucher:
+  name: '&e[建材兑换券]'
+  lore:
+    - '&7输入命令/tianjiredeem打开兑换界面'
+
+command:
+  usage: '&e用法：/tianjiredeem 或 /tianjiredeem give <amount> [player_name]'
+  player-only: '&c只有玩家可以打开兑换目录。'
+  no-permission: '&c你没有执行此操作的权限。'
+  invalid-amount: '&c发放数量必须是正整数。'
+  player-required: '&c请指定在线玩家：/tianjiredeem give <amount> <player_name>'
+  player-not-found: '&c玩家 {player} 不在线。'
+  given: '&a已向 {player} 发放 {amount} 张兑换券。'
+  received: '&a你收到了 {amount} 张兑换券。'
+
+dialog:
+  catalog-title: '建材兑换目录'
+  catalog-empty: '暂无可兑换材料。'
+  page: '第 {page}/{pages} 页'
+  previous: '上一页'
+  next: '下一页'
+  close: '关闭'
+  redeem-title: '兑换：{product}'
+  rate: '每张兑换券可兑换 64 个所选物品。'
+  balance: '背包兑换券：{amount} 张'
+  amount: '使用券数'
+  redeem: '兑换'
+  back: '返回目录'
+  result-title: '兑换结果'
+  success: '&a已使用 {amount} 张券兑换 {count} 个{product}。'
+  insufficient: '&c兑换券不足，需要 {amount} 张，背包中有 {count} 张。'
+  invalid-amount: '&c使用券数必须是 1～64 的整数。'
+  continue: '继续兑换'
+
+startup:
+  invalid-config: '配置错误：{error}。请检查该位置的字段类型、材质及商品 ID，修正后重启。'

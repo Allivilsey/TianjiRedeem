@@ -1,0 +1,20 @@
+# 修改后重启服务器生效。券的名称与描述在 messages.yml 中配置。
+voucher:
+  material: FIELD_MASONED_BANNER_PATTERN
+
+# 商品 ID 必须唯一，名称不能为空，材质必须是可作为物品发放的方块。
+# 所有商品固定每张券兑换 64 个，不支持单独设置价格或数量。
+# 使用 products: [] 可暂时清空目录。
+products:
+  - id: stone
+    name: 石头
+    material: STONE
+  - id: stone_bricks
+    name: 石砖
+    material: STONE_BRICKS
+  - id: oak_planks
+    name: 橡木木板
+    material: OAK_PLANKS
+  - id: glass
+    name: 玻璃
+    material: GLASS

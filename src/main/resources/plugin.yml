@@ -1,0 +1,11 @@
+name: TianjiRedeem
+version: '1.0.0'
+main: org.tianjiserver.redeem.TianjiRedeemPlugin
+api-version: '26.2'
+commands:
+  tianjiredeem: {}
+permissions:
+  tianjiredeem.use:
+    default: true
+  tianjiredeem.admin.give:
+    default: op
