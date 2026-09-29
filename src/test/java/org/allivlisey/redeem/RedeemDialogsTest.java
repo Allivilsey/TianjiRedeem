@@ -13,15 +13,13 @@ import io.papermc.paper.registry.data.dialog.action.DialogActionCallback;
 import io.papermc.paper.registry.data.dialog.input.NumberRangeDialogInput;
 import io.papermc.paper.registry.data.dialog.type.MultiActionType;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ObjectComponent;
 import net.kyori.adventure.text.event.ClickCallback;
+import net.kyori.adventure.text.object.SpriteObjectContents;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.Art;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -32,7 +30,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
-import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockito.MockedStatic;
 
 import java.util.ArrayList;
@@ -58,30 +55,19 @@ class RedeemDialogsTest {
     private JavaPlugin plugin;
     private Messages messages;
     private RedeemService service;
-    private ServerMock server;
     private RedeemDialogs dialogs;
-    private Inventory openedInventory;
-    private InventoryView view;
+    private MultiActionType shownActions;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     void setUp() {
-        server = MockBukkit.mock();
+        MockBukkit.mock();
         plugin = mock(JavaPlugin.class);
         when(plugin.isEnabled()).thenReturn(true);
         player = mock(Player.class);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.hasPermission("tianjiredeem.use")).thenReturn(true);
-        when(player.isOnline()).thenReturn(true);
-        view = mock(InventoryView.class);
-        when(player.getOpenInventory()).thenReturn(view);
-        when(player.openInventory(any(Inventory.class))).thenAnswer(call -> {
-            openedInventory = call.getArgument(0);
-            return view;
-        });
-        doAnswer(call -> { openedInventory = null; return null; }).when(player).closeInventory();
         PlayerInventory inventory = mock(PlayerInventory.class);
-        when(view.getTopInventory()).thenAnswer(call -> openedInventory == null ? inventory : openedInventory);
         when(inventory.getStorageContents()).thenReturn(new ItemStack[36]);
         when(player.getInventory()).thenReturn(inventory);
         messages = mock(Messages.class);
@@ -103,6 +89,14 @@ class RedeemDialogsTest {
             var builder = mock(ActionButton.Builder.class, RETURNS_SELF);
             var button = mock(ActionButton.class);
             when(button.label()).thenReturn(call.getArgument(0));
+            when(builder.tooltip(nullable(Component.class))).thenAnswer(tooltip -> {
+                when(button.tooltip()).thenReturn(tooltip.getArgument(0));
+                return builder;
+            });
+            when(builder.width(anyInt())).thenAnswer(width -> {
+                when(button.width()).thenReturn(width.getArgument(0));
+                return builder;
+            });
             when(builder.action(any())).thenAnswer(action -> {
                 when(button.action()).thenReturn(action.getArgument(0));
                 return builder;
@@ -120,7 +114,20 @@ class RedeemDialogsTest {
         when(provider.multiAction(anyList())).thenAnswer(call -> {
             assertFalse(call.getArgument(0, List.class).isEmpty(), "Paper rejects empty multiAction dialogs");
             var builder = mock(MultiActionType.Builder.class, RETURNS_SELF);
-            when(builder.build()).thenReturn(mock(MultiActionType.class));
+            var type = mock(MultiActionType.class);
+            when(type.actions()).thenReturn(call.getArgument(0));
+            when(builder.columns(anyInt())).thenAnswer(columns -> {
+                when(type.columns()).thenReturn(columns.getArgument(0));
+                return builder;
+            });
+            when(builder.exitAction(any())).thenAnswer(exit -> {
+                when(type.exitAction()).thenReturn(exit.getArgument(0));
+                return builder;
+            });
+            when(builder.build()).thenAnswer(ignored -> {
+                shownActions = type;
+                return type;
+            });
             return builder;
         });
         when(provider.numberRangeBuilder(anyString(), any(), anyFloat(), anyFloat())).thenAnswer(call -> {
@@ -154,39 +161,44 @@ class RedeemDialogsTest {
         assertTrue(hasButton("石材"));
         assertTrue(hasButton("木材"));
         assertFalse(hasButton("空分类"));
-        assertNull(openedInventory);
         click("木材", null, player);
-        assertEquals(9, openedInventory.getSize());
-        assertEquals(Material.OAK_LOG, openedInventory.getItem(0).getType());
-        assertNull(openedInventory.getItem(1));
-        clickSlot(8);
-        assertNull(openedInventory);
+        assertEquals(1, shownActions.actions().size());
+        assertEquals(new RedeemProduct("wood", Material.OAK_LOG, null).icon(), shownActions.actions().getFirst().label());
+        click(shownActions.actions().getFirst(), null, player);
+        click("dialog.back", null, player);
+        assertEquals(1, shownActions.actions().size());
+        assertEquals(new RedeemProduct("wood", Material.OAK_LOG, null).icon(), shownActions.actions().getFirst().label());
+        assertEquals("dialog.back", label(shownActions.exitAction()));
+        assertEquals(150, shownActions.exitAction().width());
+        click(shownActions.exitAction(), null, player);
         assertEquals(2, buttons.stream().filter(button -> label(button).equals("木材")).count());
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 8, 9, 35, 45, 48, 51, 53})
+    @ValueSource(ints = {1, 8, 9, 35, 45, 48, 51, 53, 54, 100})
     void gridHasNineColumnsAndEnoughRowsForEveryChoice(int count) {
         openCatalog(java.util.Collections.nCopies(count, STONE));
-        assertEquals(((count + 1 + 8) / 9) * 9, openedInventory.getSize());
-        for (int slot = 0; slot < count; slot++) assertEquals(Material.STONE, openedInventory.getItem(slot).getType());
-        assertEquals(Material.BARRIER, openedInventory.getItem(openedInventory.getSize() - 1).getType());
-        verify(messages, never()).text("dialog.next");
-        verify(messages, never()).text("dialog.previous");
+        assertEquals(9, shownActions.columns());
+        assertEquals(count, shownActions.actions().size());
+        Component tooltip = STONE.name().append(Component.newline()).append(Component.text("dialog.rate"));
+        for (ActionButton button : shownActions.actions()) {
+            assertEquals(20, button.width());
+            assertEquals(STONE.icon(), button.label());
+            assertInstanceOf(SpriteObjectContents.class, assertInstanceOf(ObjectComponent.class, button.label()).contents());
+            assertEquals(tooltip, button.tooltip());
+        }
     }
 
     @Test
-    void largeCustomCategoriesKeepAllItemsReachable() {
+    void largeCustomCategoriesKeepEveryProductSelectableInOneDialog() {
         var choices = new ArrayList<>(java.util.Collections.nCopies(54, STONE));
         choices.set(53, new RedeemProduct("stone", Material.SHULKER_BOX, null));
         openCatalog(choices);
-        assertEquals(54, openedInventory.getSize());
-        clickSlot(52);
-        assertEquals(18, openedInventory.getSize());
-        assertEquals(Material.SHULKER_BOX, openedInventory.getItem(8).getType());
-        clickSlot(15);
-        assertEquals(54, openedInventory.getSize());
-        assertEquals(Material.STONE, openedInventory.getItem(0).getType());
+        assertEquals(54, shownActions.actions().size());
+        click(shownActions.actions().get(53), null, player);
+        verify(provider).itemDialogBodyBuilder(argThat(item -> item.getType() == Material.SHULKER_BOX));
+        click("dialog.back", null, player);
+        assertEquals(54, shownActions.actions().size());
     }
 
     @Test
@@ -194,39 +206,14 @@ class RedeemDialogsTest {
         dialogs = new RedeemDialogs(plugin, Map.of(), List.of(new RedeemProduct("", Material.STONE, null)), messages, service);
         dialogs.openCategories(player);
         click("dialog.catalog-title", null, player);
-        assertEquals(Material.STONE, openedInventory.getItem(0).getType());
+        assertEquals(STONE.icon(), shownActions.actions().getFirst().label());
     }
 
     @Test
-    void menuItemsCannotBeTakenOrChangedByBottomClicksOrDrags() {
-        openCatalog(List.of(STONE));
-        Inventory current = openedInventory;
-        InventoryClickEvent bottomClick = inventoryClick(current.getSize());
-        dialogs.onClick(bottomClick);
-        verify(bottomClick).setCancelled(true);
-        InventoryDragEvent drag = mock(InventoryDragEvent.class);
-        when(drag.getView()).thenReturn(view);
-        dialogs.onDrag(drag);
-        verify(drag).setCancelled(true);
-        server.getScheduler().performOneTick();
-        assertSame(current, openedInventory);
-        assertNull(amountInput);
-    }
-
-    @Test
-    void closingMenuBeforeScheduledSelectionPreventsReopening() {
-        openCatalog(List.of(STONE));
-        dialogs.onClick(inventoryClick(0));
-        player.closeInventory();
-        server.getScheduler().performOneTick();
-        assertNull(amountInput);
-    }
-
-    @Test
-    void revokingPermissionBlocksInventorySelection() {
+    void revokingPermissionBlocksCatalogSelection() {
         openCatalog(List.of(STONE));
         when(player.hasPermission("tianjiredeem.use")).thenReturn(false);
-        clickSlot(0);
+        click(shownActions.actions().getFirst(), null, player);
         assertNull(amountInput);
         verify(messages).text("command.no-permission");
     }
@@ -247,24 +234,14 @@ class RedeemDialogsTest {
     void paintingSelectionKeepsItsVariantInPreviewAndRedemption() {
         var painting = new RedeemProduct("stone", Material.PAINTING, Art.EARTH);
         openCatalog(List.of(painting));
-        clickSlot(0);
+        assertEquals(painting.icon(), shownActions.actions().getFirst().label());
+        assertEquals(painting.name().append(Component.newline()).append(Component.text(Art.EARTH.getKey().asString()))
+            .append(Component.newline()).append(Component.text("dialog.rate")), shownActions.actions().getFirst().tooltip());
+        click(shownActions.actions().getFirst(), null, player);
         verify(provider).itemDialogBodyBuilder(argThat(item -> item.getType() == Material.PAINTING
             && item.getData(DataComponentTypes.PAINTING_VARIANT) == Art.EARTH));
         click("dialog.redeem", 1F, player);
         verify(service).redeem(player, painting, 1);
-    }
-
-    @Test
-    void shutdownClosesCatalogsAndLeavesOtherInventoriesOpen() {
-        openCatalog(List.of(STONE));
-        var viewer = server.addPlayer();
-        viewer.openInventory(openedInventory);
-        var other = server.addPlayer();
-        Inventory unrelated = server.createInventory(null, 9);
-        other.openInventory(unrelated);
-        dialogs.close();
-        assertNotSame(openedInventory, viewer.getOpenInventory().getTopInventory());
-        assertSame(unrelated, other.getOpenInventory().getTopInventory());
     }
 
     @Test
@@ -278,7 +255,7 @@ class RedeemDialogsTest {
         click("dialog.continue", null, player);
         verify(provider, times(2)).numberRangeBuilder(eq("amount"), any(), eq(1F), eq(64F));
         click("dialog.back", null, player);
-        assertEquals(Material.STONE, openedInventory.getItem(0).getType());
+        assertEquals(STONE.icon(), shownActions.actions().getFirst().label());
     }
 
     @Test
@@ -339,7 +316,7 @@ class RedeemDialogsTest {
 
     private void openProduct() {
         openCatalog(List.of(STONE));
-        clickSlot(0);
+        click(shownActions.actions().getFirst(), null, player);
     }
 
     private void openCatalog(List<RedeemProduct> products) {
@@ -348,23 +325,12 @@ class RedeemDialogsTest {
         click("石材", null, player);
     }
 
-    private void clickSlot(int slot) {
-        InventoryClickEvent event = inventoryClick(slot);
-        dialogs.onClick(event);
-        verify(event).setCancelled(true);
-        server.getScheduler().performOneTick();
-    }
-
-    private InventoryClickEvent inventoryClick(int slot) {
-        InventoryClickEvent event = mock(InventoryClickEvent.class);
-        when(event.getView()).thenReturn(view);
-        when(event.getWhoClicked()).thenReturn(player);
-        when(event.getRawSlot()).thenReturn(slot);
-        return event;
-    }
-
     private void click(String label, Float amount, Player actor) {
         var button = buttons.reversed().stream().filter(entry -> label(entry).equals(label)).findFirst().orElseThrow();
+        click(button, amount, actor);
+    }
+
+    private void click(ActionButton button, Float amount, Player actor) {
         DialogResponseView response = mock(DialogResponseView.class);
         when(response.getFloat("amount")).thenReturn(amount);
         callbacks.get(button.action()).accept(response, actor);

@@ -13,9 +13,6 @@ command:
 dialog:
   catalog-title: '建材兑换目录'
   catalog-empty: '暂无可兑换材料。'
-  page: '第 {page}/{pages} 页'
-  previous: '上一页'
-  next: '下一页'
   close: '关闭'
   redeem-title: '兑换：{product}'
   rate: '每张兑换券可兑换 64 个所选物品。'

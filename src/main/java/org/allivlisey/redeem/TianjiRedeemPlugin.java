@@ -14,7 +14,6 @@ import revxrsal.commands.bukkit.actor.BukkitCommandActor;
 
 public class TianjiRedeemPlugin extends JavaPlugin {
     private Lamp<BukkitCommandActor> commands;
-    private RedeemDialogs dialogs;
 
     @Override
     public void onEnable() {
@@ -26,8 +25,7 @@ public class TianjiRedeemPlugin extends JavaPlugin {
             if (!new File(getDataFolder(), "messages.yml").exists()) saveResource("messages.yml", false);
             messages = Messages.load(readYaml("messages.yml"));
             RedeemConfig config = RedeemConfig.load(readYaml("config.yml"));
-            dialogs = new RedeemDialogs(this, config.categories(), config.products(), messages, new RedeemService());
-            getServer().getPluginManager().registerEvents(dialogs, this);
+            RedeemDialogs dialogs = new RedeemDialogs(this, config.categories(), config.products(), messages, new RedeemService());
             var voucher = Vouchers.create(config.voucherName(), config.voucherLore());
             commands = new RedeemCommand(dialogs, voucher, messages).register(this);
         } catch (IllegalArgumentException error) {
@@ -38,10 +36,6 @@ public class TianjiRedeemPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (dialogs != null) {
-            dialogs.close();
-            dialogs = null;
-        }
         if (commands != null) {
             commands.unregisterAllCommands();
             commands = null;

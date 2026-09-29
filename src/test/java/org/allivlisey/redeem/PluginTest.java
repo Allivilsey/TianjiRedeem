@@ -31,8 +31,6 @@ class PluginTest {
         assertEquals(1, plugin.getDescription().getCommands().size());
         assertTrue(plugin.getCommand("tianjiredeem").getAliases().isEmpty());
         var player = server.addPlayer();
-        // MockBukkit's initial view lacks the top inventory guaranteed by Paper.
-        player.openInventory(server.createInventory(null, 9));
         assertTrue(player.hasPermission("tianjiredeem.use"));
         assertFalse(player.hasPermission("tianjiredeem.admin.give"));
         player.setOp(true);
@@ -62,7 +60,6 @@ class PluginTest {
         server.getPluginManager().enablePlugin(plugin);
         assertTrue(plugin.isEnabled());
         var player = server.addPlayer();
-        player.openInventory(server.createInventory(null, 9));
         player.setOp(true);
         server.dispatchCommand(player, "tianjiredeem give 2");
         var voucher = player.getInventory().getItem(0);
