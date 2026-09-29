@@ -11,16 +11,19 @@ command:
   failed: '&c命令执行失败，请联系管理员查看服务器日志。'
 
 dialog:
-  catalog-title: '建材兑换目录'
+  catalog-title: '建材兑换'
+  # 提示宽度跟随一行按钮的总宽度，高度自动适应；多行可使用 YAML 的 |- 写法。
+  category-hint: '&7请选择建材分类'
+  catalog-hint: '&7悬停查看名称，点击选择建材'
   catalog-empty: '暂无可兑换材料。'
   close: '关闭'
-  redeem-title: '兑换：{product}'
+  redeem-title: '{product}'
   rate: '每张兑换券可兑换 64 个所选物品。'
-  balance: '背包兑换券：{amount} 张'
+  balance: '兑换券存量：{amount}'
   amount: '使用券数'
   redeem: '兑换'
   back: '返回'
-  insufficient: '&c兑换券不足，需要 {amount} 张，背包中有 {count} 张。'
+  insufficient: '&c兑换券不足'
   invalid-amount: '&c使用券数必须是 1～64 的整数。'
 
 startup:

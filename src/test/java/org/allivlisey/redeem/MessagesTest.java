@@ -16,7 +16,7 @@ class MessagesTest {
         var messages = Messages.load(defaults());
         var product = net.kyori.adventure.text.Component.translatable("block.minecraft.stone");
         var title = messages.textComponents("dialog.redeem-title", Map.of("product", product));
-        assertTrue(title.contains(product));
+        assertTrue(title.equals(product) || title.contains(product));
         assertFalse(net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
                 .serialize(title).contains("{product}"));
     }

@@ -53,7 +53,8 @@ public final class RedeemDialogs {
         player.showDialog(Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(messages.text("dialog.catalog-title"))
                 .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE)
-                .body(config.products().isEmpty() ? List.of(DialogBody.plainMessage(messages.text("dialog.catalog-empty"))) : List.of()).build())
+                .body(List.of(actions.isEmpty() ? DialogBody.plainMessage(messages.text("dialog.catalog-empty"))
+                    : DialogBody.plainMessage(messages.text("dialog.category-hint"), rowWidth(actions, 2)))).build())
             .type(actions.isEmpty() ? DialogType.notice(close) : DialogType.multiAction(actions, close, 2))));
     }
 
@@ -71,8 +72,15 @@ public final class RedeemDialogs {
         ActionButton back = button(player, messages.text("dialog.back"), (actor, response) -> openCategories(actor));
         player.showDialog(Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(category.isEmpty() ? messages.text("dialog.catalog-title") : Component.text(config.categories().get(category)))
-                .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE).build())
+                .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE)
+                .body(List.of(DialogBody.plainMessage(messages.text("dialog.catalog-hint"), rowWidth(actions, 9)))).build())
             .type(DialogType.multiAction(actions, back, 9))));
+    }
+
+    private static int rowWidth(List<ActionButton> actions, int columns) {
+        int count = Math.min(actions.size(), columns);
+        // The 26.2 client places 2 pixels between dialog buttons.
+        return count * actions.getFirst().width() + (count - 1) * 2;
     }
 
     private void openProduct(Player player, RedeemProduct product) {

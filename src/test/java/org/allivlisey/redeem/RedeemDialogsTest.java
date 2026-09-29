@@ -163,6 +163,7 @@ class RedeemDialogsTest {
             List.of(STONE, new RedeemProduct("wood", Material.OAK_LOG, null)));
         dialogs.openCategories(player);
         assertTrue(hasButton("石材"));
+        verify(provider).plainMessageDialogBody(Component.text("dialog.category-hint"), 302);
         assertTrue(hasButton("木材"));
         assertFalse(hasButton("空分类"));
         click("木材", null, player);
@@ -184,6 +185,7 @@ class RedeemDialogsTest {
         openCatalog(java.util.Collections.nCopies(count, STONE));
         assertEquals(9, shownActions.columns());
         assertEquals(count, shownActions.actions().size());
+        verify(provider).plainMessageDialogBody(Component.text("dialog.catalog-hint"), Math.min(count, 9) * 22 - 2);
         for (ActionButton button : shownActions.actions()) {
             assertEquals(20, button.width());
             assertEquals(STONE.icon(), button.label());

@@ -15,7 +15,7 @@ public final class Messages {
             "command.usage", "command.player-only", "command.no-permission",
             "command.invalid-amount", "command.player-required", "command.player-not-found",
             "command.given", "command.received", "command.failed", "dialog.catalog-title", "dialog.catalog-empty",
-            "dialog.close", "dialog.redeem-title",
+            "dialog.category-hint", "dialog.catalog-hint", "dialog.close", "dialog.redeem-title",
             "dialog.rate", "dialog.balance", "dialog.amount", "dialog.redeem", "dialog.back",
             "dialog.insufficient", "dialog.invalid-amount", "startup.invalid-config");
 
