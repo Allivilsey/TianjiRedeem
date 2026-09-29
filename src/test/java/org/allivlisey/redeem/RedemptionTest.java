@@ -1,4 +1,4 @@
-package org.tianjiserver.redeem;
+package org.allivlisey.redeem;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;

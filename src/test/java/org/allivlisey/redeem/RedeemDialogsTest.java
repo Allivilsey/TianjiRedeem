@@ -1,4 +1,4 @@
-package org.tianjiserver.redeem;
+package org.allivlisey.redeem;
 
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.dialog.DialogResponseView;

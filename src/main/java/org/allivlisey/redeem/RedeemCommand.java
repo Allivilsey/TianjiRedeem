@@ -1,4 +1,4 @@
-package org.tianjiserver.redeem;
+package org.allivlisey.redeem;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

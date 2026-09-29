@@ -1,4 +1,4 @@
-package org.tianjiserver.redeem;
+package org.allivlisey.redeem;
 
 import java.io.File;
 import java.io.IOException;

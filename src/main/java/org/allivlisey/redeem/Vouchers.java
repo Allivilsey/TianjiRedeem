@@ -1,4 +1,4 @@
-package org.tianjiserver.redeem;
+package org.allivlisey.redeem;
 
 import java.util.List;
 import net.kyori.adventure.text.Component;

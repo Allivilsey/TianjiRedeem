@@ -1,4 +1,4 @@
-package org.tianjiserver.redeem;
+package org.allivlisey.redeem;
 
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.configuration.file.YamlConfiguration;

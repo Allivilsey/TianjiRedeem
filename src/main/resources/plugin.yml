@@ -1,6 +1,6 @@
 name: TianjiRedeem
 version: '1.0.0'
-main: org.tianjiserver.redeem.TianjiRedeemPlugin
+main: org.allivlisey.redeem.TianjiRedeemPlugin
 api-version: '26.2'
 commands:
   tianjiredeem: {}
