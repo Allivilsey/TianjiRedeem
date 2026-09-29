@@ -28,12 +28,17 @@ public final class RedeemDialogs {
     private final RedeemConfig config;
     private final Messages messages;
     private final RedeemService service;
+    private boolean active = true;
 
     public RedeemDialogs(JavaPlugin plugin, RedeemConfig config, Messages messages, RedeemService service) {
         this.plugin = plugin;
         this.config = config;
         this.messages = messages;
         this.service = service;
+    }
+
+    void invalidate() {
+        active = false;
     }
 
     public void openCategories(Player player) {
@@ -136,6 +141,10 @@ public final class RedeemDialogs {
     }
 
     private boolean canUse(Player player) {
+        if (!active) {
+            player.closeDialog();
+            return false;
+        }
         if (player.hasPermission("tianjiredeem.use")) return true;
         player.closeDialog();
         player.sendMessage(messages.text("command.no-permission"));

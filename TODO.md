@@ -14,25 +14,29 @@
 
 | 命令                                          | 行为             | 权限                                      |
 | --------------------------------------------- | ---------------- | ----------------------------------------- |
-| `/tianjiredeem`                             | 玩家打开兑换目录 | `tianjiredeem.use`，默认允许            |
+| `/tianjiredeem open`                             | 玩家打开兑换目录 | `tianjiredeem.use`，默认允许            |
+| `/tianjiredeem open <player_name>` | 为指定在线玩家打开兑换目录 | `tianjiredeem.admin.open`，默认仅管理员 |
 | `/tianjiredeem give <amount> [player_name]` | 管理员发放兑换券 | `tianjiredeem.admin.give`，默认仅管理员 |
+| `/tianjiredeem reload` | 重载配置和消息 | `tianjiredeem.admin.reload`，默认仅管理员 |
 
 - `amount` 为发放券数，必须是正整数。
 - 玩家省略 `player_name` 时，目标为命令执行者本人。
 - 控制台等非玩家执行者必须指定目标；目标玩家必须在线。
+- `open` 指定目标时需要管理员权限，玩家 ID 为完整游戏名；目标玩家仍需有 `tianjiredeem.use` 权限。不带子命令的 `/tianjiredeem` 只显示用法。
+- `reload` 允许管理员或控制台执行，两份配置全部校验通过后生效；失败保留原配置，成功后旧菜单在下次点击时关闭。
 
 ## 商品目录与配置
 
 - categories 下每个分类统一配置 name 和 products；普通商品直接填写物品 ID，指定画作另配 painting-variant。兼容旧的独立分类与商品配置及纯物品 ID 列表。
 - 所有商品使用固定的 1:64 比例，不设置独立价格或产物数量。
 - 目标材料必须是可以发放的物品；默认接入《建材分类.md》全部条目，具体商品由管理组调整。
-- 配置在启动时读取；配置错误应指出对应位置。
-- 券的材质固定为砖纹旗帜图案，新发放的券最多堆叠 64 张。默认名称为“[建材兑换券]”，描述为“输入命令/tianjiredeem打开兑换界面”，名称和描述允许在配置文件中修改；这些外观信息不参与券的识别。
+- 配置在启动或执行 `reload` 时读取；配置错误应指出对应位置。
+- 券的材质固定为砖纹旗帜图案，新发放的券最多堆叠 64 张。默认名称为“[建材兑换券]”，描述中的打开命令为“/tianjiredeem open”，名称和描述允许在配置文件中修改；这些外观信息不参与券的识别。
 
 ## 玩家兑换流程
 
 ```text
-/tianjiredeem
+/tianjiredeem open
     ↓
 类型选择 → 九列物品图标目录
     ↓

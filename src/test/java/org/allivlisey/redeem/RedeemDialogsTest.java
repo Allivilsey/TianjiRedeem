@@ -21,6 +21,7 @@ import net.kyori.adventure.text.object.SpriteObjectContents;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.Art;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -35,6 +36,7 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockito.MockedStatic;
 
 import java.util.ArrayList;
+import java.io.File;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -322,6 +324,54 @@ class RedeemDialogsTest {
         when(plugin.isEnabled()).thenReturn(false);
         click("dialog.redeem", 1F, player);
         verifyNoInteractions(service);
+    }
+
+    @Test
+    void reloadUpdatesMenusMessagesAndSoundsAndInvalidatesOldButtons() throws Exception {
+        when(player.getName()).thenReturn("ReloadViewer");
+        when(player.hasPermission(any(org.bukkit.permissions.Permission.class)))
+                .thenAnswer(call -> player.hasPermission(call.getArgument(0, org.bukkit.permissions.Permission.class).getName()));
+        var livePlugin = MockBukkit.load(TianjiRedeemPlugin.class);
+        var command = livePlugin.getCommand("tianjiredeem");
+        command.execute(player, "tianjiredeem", new String[]{"open"});
+        click(shownActions.actions().getFirst(), null, player);
+        click(shownActions.actions().getFirst(), null, player);
+        var oldRedeem = shownActions.actions().getFirst();
+
+        File configFile = new File(livePlugin.getDataFolder(), "config.yml");
+        var config = YamlConfiguration.loadConfiguration(configFile);
+        config.set("categories", Map.of("new", Map.of("name", "新分类", "products", List.of("minecraft:diamond_block"))));
+        config.set("sounds.failure.sound", "minecraft:block.anvil.land");
+        config.set("sounds.failure.volume", 0.3);
+        config.set("sounds.failure.pitch", 0.8);
+        config.save(configFile);
+        File messagesFile = new File(livePlugin.getDataFolder(), "messages.yml");
+        var texts = YamlConfiguration.loadConfiguration(messagesFile);
+        texts.set("dialog.balance", "new balance {amount}");
+        texts.set("command.reloaded", "reloaded");
+        texts.save(messagesFile);
+
+        var console = MockBukkit.getMock().getConsoleSender();
+        command.execute(console, "tianjiredeem", new String[]{"reload"});
+        assertEquals(Component.text("reloaded"), console.nextComponentMessage());
+        clearInvocations(player);
+        click(oldRedeem, 1F, player);
+        verify(player).closeDialog();
+        verify(player, never()).getInventory();
+        verify(player, never()).showDialog(any());
+
+        buttons.clear();
+        command.execute(player, "tianjiredeem", new String[]{"open"});
+        assertEquals(1, shownActions.actions().size());
+        assertTrue(hasButton("新分类"));
+        click("新分类", null, player);
+        assertEquals(1, shownActions.actions().size());
+        click(shownActions.actions().getFirst(), null, player);
+        verify(provider).itemDialogBodyBuilder(argThat(item -> item.getType() == Material.DIAMOND_BLOCK));
+        verify(provider).plainMessageDialogBody(argThat(text ->
+                PlainTextComponentSerializer.plainText().serialize(text).equals("new balance 0")));
+        click(shownActions.actions().getFirst(), 1F, player);
+        verify(player).playSound(FAILURE_SOUND);
     }
 
     @Test

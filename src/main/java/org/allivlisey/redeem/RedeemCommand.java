@@ -24,14 +24,27 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public final class RedeemCommand {
-    private final RedeemDialogs dialogs;
-    private final ItemStack voucher;
-    private final Messages messages;
+    private RedeemDialogs dialogs;
+    private ItemStack voucher;
+    private Messages messages;
+    private final Runnable reloadSettings;
 
-    public RedeemCommand(RedeemDialogs dialogs, ItemStack voucher, Messages messages) {
+    public RedeemCommand(RedeemDialogs dialogs, ItemStack voucher, Messages messages, Runnable reloadSettings) {
         this.dialogs = dialogs;
         this.voucher = voucher;
         this.messages = messages;
+        this.reloadSettings = reloadSettings;
+    }
+
+    void update(RedeemDialogs dialogs, ItemStack voucher, Messages messages) {
+        invalidate();
+        this.dialogs = dialogs;
+        this.voucher = voucher;
+        this.messages = messages;
+    }
+
+    void invalidate() {
+        dialogs.invalidate();
     }
 
     public Lamp<BukkitCommandActor> register(JavaPlugin plugin) {
@@ -56,9 +69,27 @@ public final class RedeemCommand {
     // The empty tail lets Lamp reject surplus arguments instead of accepting a prefix.
     @Command("tianjiredeem")
     @CommandPriority.Low
+    public void usage(BukkitCommandActor actor, @Sized(max = 0) String[] extra) {
+        actor.sender().sendMessage(messages.text("command.usage"));
+    }
+
+    @Command("tianjiredeem open")
+    @CommandPriority.Low
     @CommandPermission(value = "tianjiredeem.use", defaultAccess = PermissionDefault.TRUE)
     public void open(Player player, @Sized(max = 0) String[] extra) {
         dialogs.openCategories(player);
+    }
+
+    @Command("tianjiredeem open")
+    @CommandPermission("tianjiredeem.admin.open")
+    public void openFor(BukkitCommandActor actor, @Optional @Named("player_name") Player target,
+                        @Sized(max = 0) String[] extra) {
+        if (target == null) target = actor.asPlayer();
+        if (target == null) {
+            actor.sender().sendMessage(messages.text("command.player-only"));
+            return;
+        }
+        dialogs.openCategories(target);
     }
 
     @Command("tianjiredeem give")
@@ -74,6 +105,18 @@ public final class RedeemCommand {
         var replacements = Map.of("player", target.getName(), "amount", Integer.toString(amount));
         actor.sender().sendMessage(messages.text("command.given", replacements));
         if (!target.equals(actor.sender())) target.sendMessage(messages.text("command.received", replacements));
+    }
+
+    @Command("tianjiredeem reload")
+    @CommandPermission("tianjiredeem.admin.reload")
+    public void reload(BukkitCommandActor actor, @Sized(max = 0) String[] extra) {
+        try {
+            reloadSettings.run();
+        } catch (IllegalArgumentException error) {
+            actor.sender().sendMessage(messages.text("command.reload-failed", Map.of("error", error.getMessage())));
+            return;
+        }
+        actor.sender().sendMessage(messages.text("command.reloaded"));
     }
 
     private void handleException(Throwable error, ErrorContext<BukkitCommandActor> context, JavaPlugin plugin) {

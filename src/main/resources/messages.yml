@@ -1,7 +1,7 @@
 # 使用 & 颜色代码；花括号中的占位符由插件替换。
 command:
-  usage: '&e用法：/tianjiredeem 或 /tianjiredeem give <amount> [player_name]'
-  player-only: '&c只有玩家可以打开兑换目录。'
+  usage: '&e用法：/tianjiredeem open [player_name]、/tianjiredeem give <amount> [player_name] 或 /tianjiredeem reload'
+  player-only: '&c非玩家执行者请使用 /tianjiredeem open <player_name> 指定在线玩家。'
   no-permission: '&c你没有执行此操作的权限。'
   invalid-amount: '&c发放数量必须是正整数。'
   player-required: '&c请指定在线玩家：/tianjiredeem give <amount> <player_name>'
@@ -9,14 +9,19 @@ command:
   given: '&a已向 {player} 发放 {amount} 张兑换券。'
   received: '&a你收到了 {amount} 张兑换券。'
   failed: '&c命令执行失败，请联系管理员查看服务器日志。'
+  reloaded: '&a已重新加载配置和消息。'
+  reload-failed: '&c重载失败：{error}。已保留当前配置。'
 
 dialog:
   catalog-title: '建材兑换'
   # 每个列表项显示为一行；宽度跟随一行按钮的总宽度，高度自动适应。
   category-hint:
-    - '&7请选择建材分类'
+    - '&7欢迎来到建材兑换界面'
+    - '&7你可以点击下面的按钮选择建材分类'
+    - '&7然后点击建材图标选择你想兑换的物品'
   catalog-hint:
-    - '&7悬停查看名称，点击选择建材'
+    - '&7这里是建材选择界面'
+    - '&7你可以点击下面的按钮选择想要兑换的建材'
   catalog-empty: '暂无可兑换材料。'
   close: '关闭'
   redeem-title: '{product}'

@@ -44,7 +44,7 @@ class RedeemCommandTest {
         when(messages.text(anyString(), anyMap())).thenAnswer(invocation -> Component.text((String) invocation.getArgument(0)));
         dialogs = mock(RedeemDialogs.class);
         var voucher = Vouchers.create(Component.text("custom voucher"), List.of(Component.text("custom lore")));
-        command = new RedeemCommand(dialogs, voucher, messages);
+        command = new RedeemCommand(dialogs, voucher, messages, mock(Runnable.class));
         lamp = command.register(plugin);
     }
 
@@ -56,25 +56,67 @@ class RedeemCommandTest {
 
     @Test
     void playerWithUsePermissionOpensCategories() {
-        assertTrue(run(player));
+        assertTrue(run(player, "open"));
         verify(dialogs).openCategories(player);
     }
 
     @Test
     void unexpectedFailureUsesConfiguredMessage() {
         doThrow(new IllegalStateException("dialog unavailable")).when(dialogs).openCategories(player);
-        run(player);
+        run(player, "open");
         assertEquals(Component.text("command.failed"), player.nextComponentMessage());
     }
 
     @Test
     void deniesCatalogWithoutUsePermissionAndFromConsole() {
         player.addAttachment(plugin, "tianjiredeem.use", false);
-        run(player);
+        run(player, "open");
         assertEquals(Component.text("command.no-permission"), player.nextComponentMessage());
-        run(server.getConsoleSender());
+        run(server.getConsoleSender(), "open");
         assertEquals(Component.text("command.player-only"), server.getConsoleSender().nextComponentMessage());
         verifyNoInteractions(dialogs);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Builder", "Target"})
+    void openingForANamedPlayerRequiresAdminPermission(String targetName) {
+        server.addPlayer("Target");
+        run(player, "open", targetName);
+        assertEquals(Component.text("command.no-permission"), player.nextComponentMessage());
+        verifyNoInteractions(dialogs);
+    }
+
+    @Test
+    void adminCanOpenForAnotherPlayerWithoutUsePermission() {
+        var target = server.addPlayer("Target");
+        player.addAttachment(plugin, "tianjiredeem.use", false);
+        player.addAttachment(plugin, "tianjiredeem.admin.open", true);
+        run(player, "open", "Target");
+        verify(dialogs).openCategories(target);
+        verifyNoMoreInteractions(dialogs);
+        assertNull(player.nextComponentMessage());
+    }
+
+    @Test
+    void opCanOpenForAnotherPlayerByDefault() {
+        var target = server.addPlayer("Target");
+        player.setOp(true);
+        run(player, "open", "Target");
+        verify(dialogs).openCategories(target);
+        verifyNoMoreInteractions(dialogs);
+    }
+
+    @Test
+    void consoleCanOpenOnlyForAnExactOnlinePlayerIgnoringCase() {
+        var console = server.getConsoleSender();
+        run(console, "open", "Buil");
+        run(console, "open", "Offline");
+        assertEquals(Component.text("command.player-not-found"), console.nextComponentMessage());
+        assertEquals(Component.text("command.player-not-found"), console.nextComponentMessage());
+        verifyNoInteractions(dialogs);
+        run(console, "OPEN", "builder");
+        verify(dialogs).openCategories(player);
+        assertNull(console.nextComponentMessage());
     }
 
     @Test
@@ -140,10 +182,12 @@ class RedeemCommandTest {
     @Test
     void rejectsUnknownSubcommandsMissingAmountsAndExtraArguments() {
         player.setOp(true);
+        run(player);
         run(player, "unknown");
+        run(player, "open", "Builder", "extra");
         run(player, "give");
         run(player, "give", "1", "Builder", "extra");
-        for (int i = 0; i < 3; i++) assertEquals(Component.text("command.usage"), player.nextComponentMessage());
+        for (int i = 0; i < 5; i++) assertEquals(Component.text("command.usage"), player.nextComponentMessage());
         assertEquals(0, Vouchers.count(player.getInventory()));
         verifyNoInteractions(dialogs);
     }
@@ -152,10 +196,18 @@ class RedeemCommandTest {
     void completionOnlyOffersPermittedCommandAndMatchingOnlineNames() {
         server.addPlayer("Alice");
         server.addPlayer("Alex");
-        assertEquals(List.of(), complete(""));
+        assertEquals(List.of("open"), complete(""));
+        assertEquals(List.of("open"), complete("o"));
+        assertEquals(List.of(), complete("open", ""));
         assertEquals(List.of(), complete("give", "1", ""));
         player.addAttachment(plugin, "tianjiredeem.admin.give", true);
-        assertEquals(List.of("give"), complete(""));
+        player.addAttachment(plugin, "tianjiredeem.admin.open", true);
+        assertEquals(List.of("give", "open"), complete("").stream().sorted().toList());
+        assertEquals(List.of(), complete("r"));
+        player.addAttachment(plugin, "tianjiredeem.admin.reload", true);
+        assertEquals(List.of("give", "open", "reload"), complete("").stream().sorted().toList());
+        assertEquals(List.of("reload"), complete("r"));
+        assertEquals(List.of(), complete("reload", ""));
         assertEquals(List.of("give"), complete("g"));
         // Literal completion follows Lamp's native case-sensitive behavior.
         assertEquals(List.of(), complete("G"));
@@ -163,8 +215,18 @@ class RedeemCommandTest {
         assertEquals(List.of(), complete("give", ""));
         assertEquals(List.of("Alex", "Alice"), complete("give", "1", "a"));
         assertEquals(List.of("Alex", "Alice"), complete("GIVE", "1", "A"));
+        assertEquals(List.of("Alex", "Alice"), complete("open", "a"));
+        assertEquals(List.of("Alex", "Alice"), complete("OPEN", "A"));
+        assertEquals(List.of(), complete("open", "Builder", ""));
         assertEquals(List.of(), complete("unknown", "1", ""));
         assertEquals(List.of(), complete("give", "1", "Builder", ""));
+    }
+
+    @Test
+    void hidesOpenCompletionWhenBothPermissionsAreDenied() {
+        player.addAttachment(plugin, "tianjiredeem.use", false);
+        assertEquals(List.of(), complete(""));
+        assertEquals(List.of(), complete("open", ""));
     }
 
     private boolean run(CommandSender sender, String... args) {
