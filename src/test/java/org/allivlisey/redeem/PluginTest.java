@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
+import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PluginTest {
@@ -64,8 +65,8 @@ class PluginTest {
         var voucher = player.getInventory().getItem(0);
         var legacy = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand();
         assertEquals(org.bukkit.Material.FIELD_MASONED_BANNER_PATTERN, voucher.getType());
-        assertEquals(legacy.deserialize("&e配置中的兑换券"), voucher.getItemMeta().displayName());
-        assertEquals(java.util.List.of(legacy.deserialize("&7第一行"), legacy.deserialize("第二行")),
+        assertEquals(legacy.deserialize("&e配置中的兑换券").decoration(ITALIC, false), voucher.getItemMeta().displayName());
+        assertEquals(java.util.List.of(legacy.deserialize("&7第一行").decoration(ITALIC, false), legacy.deserialize("第二行").decoration(ITALIC, false)),
                 voucher.getItemMeta().lore());
         assertEquals(2, Vouchers.count(player.getInventory()));
     }

@@ -14,7 +14,11 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import java.util.List;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
+import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RedemptionTest {
@@ -42,10 +46,32 @@ class RedemptionTest {
         assertEquals(Material.FIELD_MASONED_BANNER_PATTERN, item.getType());
         assertEquals(64, item.getMaxStackSize());
         assertTrue(item.getItemMeta().hasMaxStackSize());
-        assertEquals(name, item.getItemMeta().displayName());
-        assertEquals(lore, item.getItemMeta().lore());
+        assertEquals(name.decoration(ITALIC, false), item.getItemMeta().displayName());
+        assertEquals(List.of(Component.text("custom lore").decoration(ITALIC, false)), item.getItemMeta().lore());
         assertEquals((byte) 1, item.getPersistentDataContainer().get(Vouchers.KEY, PersistentDataType.BYTE));
         assertEquals(1, item.getAmount());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"&5&lVoucher", "&r&5&lVoucher"})
+    void coloredVoucherTextDefaultsToNonItalic(String text) {
+        Component parsed = LegacyComponentSerializer.legacyAmpersand().deserialize(text);
+        var meta = Vouchers.create(parsed, List.of(parsed)).getItemMeta();
+        for (Component actual : List.of(meta.displayName(), meta.lore().getFirst())) {
+            assertEquals(TextDecoration.State.FALSE, actual.decoration(ITALIC));
+            assertEquals(NamedTextColor.DARK_PURPLE, actual.color());
+            assertEquals(TextDecoration.State.TRUE, actual.decoration(TextDecoration.BOLD));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"&5&oVoucher", "&5Normal &oItalic&r normal"})
+    void preservesExplicitItalicFormatting(String text) {
+        Component parsed = LegacyComponentSerializer.legacyAmpersand().deserialize(text);
+        Component expected = parsed.decorationIfAbsent(ITALIC, TextDecoration.State.FALSE);
+        var meta = Vouchers.create(parsed, List.of(parsed)).getItemMeta();
+        assertEquals(expected, meta.displayName());
+        assertEquals(List.of(expected), meta.lore());
     }
 
     @Test

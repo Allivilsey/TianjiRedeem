@@ -20,6 +20,7 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import java.util.List;
 import java.util.Map;
 
+import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -89,8 +90,8 @@ class RedeemCommandTest {
         assertNull(player.nextComponentMessage());
         verify(messages).text("command.given", Map.of("player", "Builder", "amount", "65"));
         assertEquals(Material.FIELD_MASONED_BANNER_PATTERN, player.getInventory().getItem(0).getType());
-        assertEquals(Component.text("custom voucher"), player.getInventory().getItem(0).getItemMeta().displayName());
-        assertEquals(List.of(Component.text("custom lore")), player.getInventory().getItem(0).getItemMeta().lore());
+        assertEquals(Component.text("custom voucher").decoration(ITALIC, false), player.getInventory().getItem(0).getItemMeta().displayName());
+        assertEquals(List.of(Component.text("custom lore").decoration(ITALIC, false)), player.getInventory().getItem(0).getItemMeta().lore());
     }
 
     @ParameterizedTest

@@ -2,6 +2,7 @@ package org.allivlisey.redeem;
 
 import java.util.List;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -18,8 +19,11 @@ public final class Vouchers {
         ItemStack voucher = new ItemStack(Material.FIELD_MASONED_BANNER_PATTERN);
         voucher.editMeta(meta -> {
             meta.setMaxStackSize(64);
-            meta.displayName(name);
-            meta.lore(lore);
+            // Item text defaults to italic unless the component explicitly opts out.
+            meta.displayName(name.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+            meta.lore(lore.stream()
+                    .map(line -> line.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE))
+                    .toList());
             meta.getPersistentDataContainer().set(KEY, PersistentDataType.BYTE, (byte) 1);
         });
         return voucher;
