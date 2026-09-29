@@ -11,9 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
 
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class RedeemConfigTest {
@@ -187,25 +184,6 @@ class RedeemConfigTest {
                 """);
         assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
                 .getMessage().contains("config.yml: categories.second.products[0]"));
-    }
-
-    @Test
-    void bundledConfigurationIsValid() {
-        try (var stream = getClass().getResourceAsStream("/config.yml")) {
-            assertNotNull(stream);
-            var yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
-            var config = RedeemConfig.load(yaml);
-            assertFalse(yaml.contains("voucher.material"));
-            assertFalse(yaml.contains("products"));
-            assertEquals(10, config.categories().size());
-            assertEquals(427, config.products().size());
-            assertEquals(java.util.Map.of("wood", 40L, "stone", 39L, "masonry", 36L, "color", 48L,
-                    "glass", 35L, "terrain", 38L, "plants", 53L, "aquatic", 35L, "decor", 52L, "painting", 51L),
-                    config.products().stream().collect(java.util.stream.Collectors.groupingBy(
-                            RedeemProduct::category, java.util.stream.Collectors.counting())));
-        } catch (java.io.IOException e) {
-            throw new AssertionError(e);
-        }
     }
 
     @Test

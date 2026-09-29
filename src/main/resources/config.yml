@@ -63,7 +63,6 @@ categories:
       - minecraft:mangrove_roots
       - minecraft:muddy_mangrove_roots
       - minecraft:hanging_roots
-      - minecraft:oak_planks
   stone:
     name: 石材与矿物
     products:

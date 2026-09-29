@@ -54,7 +54,8 @@ public final class RedeemDialogs {
             actions.add(button(player, messages.text("dialog.catalog-title"),
                 (actor, response) -> openCatalog(actor, "")));
         }
-        ActionButton close = button(player, messages.text("dialog.close"), (actor, response) -> actor.closeDialog());
+        // closeDialog() does not dismiss the 26.2 client's waiting-for-response screen.
+        ActionButton close = button(player, messages.text("dialog.close"), (actor, response) -> actor.closeInventory());
         player.showDialog(Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(messages.text("dialog.catalog-title"))
                 .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE)
@@ -97,7 +98,8 @@ public final class RedeemDialogs {
         if (error != null) body.add(DialogBody.plainMessage(error));
         body.add(DialogBody.plainMessage(messages.text("dialog.balance",
             Map.of("amount", Integer.toString(Vouchers.count(player.getInventory()))))));
-        body.add(DialogBody.item(product.createItem(), null, true, true, 32, 32));
+        // The 26.2 client draws a 16x16 item at the body's top-left without scaling it.
+        body.add(DialogBody.item(product.createItem(), null, true, true, 16, 16));
         body.add(DialogBody.plainMessage(messages.text("dialog.rate")));
         player.showDialog(Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(messages.textComponents("dialog.redeem-title",

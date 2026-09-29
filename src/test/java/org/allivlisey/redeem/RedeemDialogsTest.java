@@ -379,7 +379,7 @@ class RedeemDialogsTest {
         dialogs(Map.of(), List.of()).openCategories(player);
         verify(messages).text("dialog.catalog-empty");
         click("dialog.close", null, player);
-        verify(player).closeDialog();
+        verify(player).closeInventory();
     }
 
     private void openProduct() {
