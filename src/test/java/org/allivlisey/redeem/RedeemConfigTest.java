@@ -39,6 +39,47 @@ class RedeemConfigTest {
         assertTrue(config.products().isEmpty());
     }
 
+    @Test
+    void oldConfigurationUsesDefaultSounds() throws Exception {
+        var config = RedeemConfig.load(yaml("products: []"));
+        assertEquals("minecraft:entity.experience_orb.pickup", config.successSound().name().asString());
+        assertEquals("minecraft:entity.villager.no", config.failureSound().name().asString());
+        assertEquals(1F, config.successSound().volume());
+        assertEquals(1F, config.failureSound().pitch());
+    }
+
+    @Test
+    void loadsIndependentSoundSettingsAndAllowsMutedVolume() throws Exception {
+        var config = RedeemConfig.load(yaml("""
+                products: []
+                sounds:
+                  success: {sound: minecraft:entity.player.levelup, volume: 0.5, pitch: 1.2}
+                  failure: {sound: minecraft:block.anvil.land, volume: 0, pitch: 0.8}
+                """));
+        assertEquals("minecraft:entity.player.levelup", config.successSound().name().asString());
+        assertEquals(0.5F, config.successSound().volume());
+        assertEquals(1.2F, config.successSound().pitch());
+        assertEquals("minecraft:block.anvil.land", config.failureSound().name().asString());
+        assertEquals(0F, config.failureSound().volume());
+        assertEquals(0.8F, config.failureSound().pitch());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"sounds: nope", "sounds.success: nope", "sounds.failure: nope",
+            "sounds.success.sound: missing", "sounds.failure.sound: 'INVALID KEY'",
+            "sounds.success.volume: -1", "sounds.failure.volume: loud", "sounds.success.volume: .inf",
+            "sounds.success.pitch: 0", "sounds.failure.pitch: -1", "sounds.failure.pitch: .nan"})
+    void rejectsInvalidSoundSettingsAtTheirConfigPath(String entry) throws Exception {
+        int separator = entry.indexOf(": ");
+        String path = entry.substring(0, separator);
+        var config = yaml("products: []");
+        var value = new YamlConfiguration();
+        value.loadFromString("value: " + entry.substring(separator + 2));
+        config.set(path, value.get("value"));
+        assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
+                .getMessage().contains("config.yml: " + path));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"WATER", "AIR", "NOT_A_MATERIAL"})
     void rejectsProductsThatCannotBeGivenAsItems(String material) throws Exception {

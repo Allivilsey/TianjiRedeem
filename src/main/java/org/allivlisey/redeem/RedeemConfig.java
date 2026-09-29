@@ -1,6 +1,7 @@
 package org.allivlisey.redeem;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.Art;
@@ -16,7 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public record RedeemConfig(Component voucherName,
-                           List<Component> voucherLore, Map<String, String> categories, List<RedeemProduct> products) {
+                           List<Component> voucherLore, Map<String, String> categories, List<RedeemProduct> products,
+                           Sound successSound, Sound failureSound) {
     public RedeemConfig {
         voucherLore = List.copyOf(voucherLore);
         categories = Collections.unmodifiableMap(new LinkedHashMap<>(categories));
@@ -67,7 +69,26 @@ public record RedeemConfig(Component voucherName,
             if (!identities.add(material.name() + ":" + (variant == null ? "" : variant.getKey()))) throw invalid(path);
             products.add(new RedeemProduct(category, material, variant));
         }
-        return new RedeemConfig(voucherName, voucherLore, categories, products);
+        if (config.contains("sounds") && !config.isConfigurationSection("sounds")) throw invalid("sounds");
+        return new RedeemConfig(voucherName, voucherLore, categories, products,
+                sound(config, "sounds.success", "minecraft:entity.experience_orb.pickup"),
+                sound(config, "sounds.failure", "minecraft:entity.villager.no"));
+    }
+
+    private static Sound sound(ConfigurationSection config, String path, String defaultName) {
+        if (config.contains(path) && !config.isConfigurationSection(path)) throw invalid(path);
+        NamespacedKey key = NamespacedKey.fromString(string(config.get(path + ".sound", defaultName), path + ".sound"));
+        if (key == null || Registry.SOUND_EVENT.get(key) == null) throw invalid(path + ".sound");
+        float volume = soundNumber(config, path + ".volume");
+        float pitch = soundNumber(config, path + ".pitch");
+        if (volume < 0) throw invalid(path + ".volume");
+        if (pitch <= 0) throw invalid(path + ".pitch");
+        return Sound.sound(key, Sound.Source.MASTER, volume, pitch);
+    }
+
+    private static float soundNumber(ConfigurationSection config, String path) {
+        if (!(config.get(path, 1.0) instanceof Number number) || !Float.isFinite(number.floatValue())) throw invalid(path);
+        return number.floatValue();
     }
 
     private static Material material(Object value, String path) {

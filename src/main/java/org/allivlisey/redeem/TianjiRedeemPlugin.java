@@ -25,7 +25,7 @@ public class TianjiRedeemPlugin extends JavaPlugin {
             if (!new File(getDataFolder(), "messages.yml").exists()) saveResource("messages.yml", false);
             messages = Messages.load(readYaml("messages.yml"));
             RedeemConfig config = RedeemConfig.load(readYaml("config.yml"));
-            RedeemDialogs dialogs = new RedeemDialogs(this, config.categories(), config.products(), messages, new RedeemService());
+            RedeemDialogs dialogs = new RedeemDialogs(this, config, messages, new RedeemService());
             var voucher = Vouchers.create(config.voucherName(), config.voucherLore());
             commands = new RedeemCommand(dialogs, voucher, messages).register(this);
         } catch (IllegalArgumentException error) {

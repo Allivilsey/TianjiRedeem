@@ -24,11 +24,11 @@ class MessagesTest {
     @Test
     void loadsLegacyColoredText() {
         var config = defaults();
-        config.set("dialog.success", "&a使用 {amount} 张券兑换 {count} 个{product}。");
+        config.set("dialog.insufficient", "&c需要 {amount} 张券，当前 {count} 张。");
         var messages = Messages.load(config);
-        var replacements = Map.of("amount", "2", "count", "128", "product", "石头");
-        assertEquals("使用 2 张券兑换 128 个石头。", messages.plain("dialog.success", replacements));
-        assertEquals(NamedTextColor.GREEN, messages.text("dialog.success", replacements).color());
+        var replacements = Map.of("amount", "2", "count", "1");
+        assertEquals("需要 2 张券，当前 1 张。", messages.plain("dialog.insufficient", replacements));
+        assertEquals(NamedTextColor.RED, messages.text("dialog.insufficient", replacements).color());
     }
 
     @Test

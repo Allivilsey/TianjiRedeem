@@ -7,6 +7,17 @@ voucher:
     - '&7在需要的时候'
     - '&7也可以在菜单中换取建材'
 
+# 兑换成功和失败的原版音效；volume 为 0 可静音，pitch 必须大于 0。
+sounds:
+  success:
+    sound: minecraft:entity.experience_orb.pickup
+    volume: 1.0
+    pitch: 1.0
+  failure:
+    sound: minecraft:entity.villager.no
+    volume: 1.0
+    pitch: 1.0
+
 # 兑换菜单中的建材分类。
 categories:
   wood: 木材与树木

@@ -13,6 +13,8 @@ import io.papermc.paper.registry.data.dialog.action.DialogActionCallback;
 import io.papermc.paper.registry.data.dialog.input.NumberRangeDialogInput;
 import io.papermc.paper.registry.data.dialog.type.MultiActionType;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.ObjectComponent;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.object.SpriteObjectContents;
@@ -45,6 +47,8 @@ import static org.mockito.Mockito.*;
 
 class RedeemDialogsTest {
     private static final RedeemProduct STONE = new RedeemProduct("stone", Material.STONE, null);
+    private static final Sound SUCCESS_SOUND = Sound.sound(Key.key("entity.player.levelup"), Sound.Source.MASTER, 0.5F, 1.2F);
+    private static final Sound FAILURE_SOUND = Sound.sound(Key.key("block.anvil.land"), Sound.Source.MASTER, 0.3F, 0.8F);
     private final List<ActionButton> buttons = new ArrayList<>();
     private final Map<DialogAction, DialogActionCallback> callbacks = new IdentityHashMap<>();
     private DialogInstancesProvider provider;
@@ -155,8 +159,8 @@ class RedeemDialogsTest {
 
     @Test
     void categoryMenuFiltersProductsAndBackReturnsToCategories() {
-        dialogs = new RedeemDialogs(plugin, Map.of("stone", "石材", "wood", "木材", "empty", "空分类"),
-            List.of(STONE, new RedeemProduct("wood", Material.OAK_LOG, null)), messages, service);
+        dialogs = dialogs(Map.of("stone", "石材", "wood", "木材", "empty", "空分类"),
+            List.of(STONE, new RedeemProduct("wood", Material.OAK_LOG, null)));
         dialogs.openCategories(player);
         assertTrue(hasButton("石材"));
         assertTrue(hasButton("木材"));
@@ -203,7 +207,7 @@ class RedeemDialogsTest {
 
     @Test
     void legacyProductsRemainAvailableUnderCatalogTitle() {
-        dialogs = new RedeemDialogs(plugin, Map.of(), List.of(new RedeemProduct("", Material.STONE, null)), messages, service);
+        dialogs = dialogs(Map.of(), List.of(new RedeemProduct("", Material.STONE, null)));
         dialogs.openCategories(player);
         click("dialog.catalog-title", null, player);
         assertEquals(STONE.icon(), shownActions.actions().getFirst().label());
@@ -245,27 +249,37 @@ class RedeemDialogsTest {
     }
 
     @Test
-    void redeemShowsSuccessAndContinueOpensFreshProductPage() {
-        when(service.redeem(player, STONE, 64)).thenReturn(true);
+    void successfulRedemptionPlaysConfiguredSoundAndRefreshesBalanceAndButtons() {
+        when(player.getInventory().getStorageContents()).thenReturn(new ItemStack[]{RedemptionTest.voucher(64)});
+        when(service.redeem(player, STONE, 64)).thenAnswer(call -> {
+            when(player.getInventory().getStorageContents()).thenReturn(new ItemStack[36]);
+            return true;
+        });
         openProduct();
+        var previousButton = shownActions.actions().getFirst();
         click("dialog.redeem", 64F, player);
         verify(service).redeem(player, STONE, 64);
-        verify(messages).textComponents("dialog.success", Map.of("product", Component.translatable(Material.STONE.translationKey()),
-            "amount", Component.text(64), "count", Component.text(4096)));
-        click("dialog.continue", null, player);
+        verify(player).playSound(SUCCESS_SOUND);
+        verify(messages).text("dialog.balance", Map.of("amount", "64"));
+        verify(messages).text("dialog.balance", Map.of("amount", "0"));
+        assertNotSame(previousButton, shownActions.actions().getFirst());
+        assertFalse(hasButton("dialog.continue"));
         verify(provider, times(2)).numberRangeBuilder(eq("amount"), any(), eq(1F), eq(64F));
+        click("dialog.redeem", 1F, player);
+        verify(service).redeem(player, STONE, 1);
         click("dialog.back", null, player);
         assertEquals(STONE.icon(), shownActions.actions().getFirst().label());
     }
 
     @Test
-    void insufficientVouchersShowsResultWithoutClaimingSuccess() {
+    void insufficientVouchersPlaysFailureSoundAndRefreshesProductPageWithReason() {
         openProduct();
         click("dialog.redeem", 1F, player);
         verify(service).redeem(player, STONE, 1);
         verify(messages).textComponents(eq("dialog.insufficient"), anyMap());
-        verify(messages, never()).textComponents(eq("dialog.success"), anyMap());
-        assertTrue(hasButton("dialog.continue"));
+        verify(player).playSound(FAILURE_SOUND);
+        verify(provider, times(2)).numberRangeBuilder(eq("amount"), any(), eq(1F), eq(64F));
+        assertFalse(hasButton("dialog.continue"));
     }
 
     @ParameterizedTest
@@ -276,6 +290,8 @@ class RedeemDialogsTest {
         click("dialog.redeem", value, player);
         verifyNoInteractions(service);
         verify(messages).text("dialog.invalid-amount");
+        verify(player).playSound(FAILURE_SOUND);
+        verify(provider, times(2)).numberRangeBuilder(eq("amount"), any(), eq(1F), eq(64F));
     }
 
     @Test
@@ -308,7 +324,7 @@ class RedeemDialogsTest {
 
     @Test
     void emptyCatalogCanBeClosed() {
-        new RedeemDialogs(plugin, Map.of(), List.of(), messages, service).openCategories(player);
+        dialogs(Map.of(), List.of()).openCategories(player);
         verify(messages).text("dialog.catalog-empty");
         click("dialog.close", null, player);
         verify(player).closeDialog();
@@ -320,7 +336,7 @@ class RedeemDialogsTest {
     }
 
     private void openCatalog(List<RedeemProduct> products) {
-        dialogs = new RedeemDialogs(plugin, Map.of("stone", "石材"), products, messages, service);
+        dialogs = dialogs(Map.of("stone", "石材"), products);
         dialogs.openCategories(player);
         click("石材", null, player);
     }
@@ -328,6 +344,11 @@ class RedeemDialogsTest {
     private void click(String label, Float amount, Player actor) {
         var button = buttons.reversed().stream().filter(entry -> label(entry).equals(label)).findFirst().orElseThrow();
         click(button, amount, actor);
+    }
+
+    private RedeemDialogs dialogs(Map<String, String> categories, List<RedeemProduct> products) {
+        return new RedeemDialogs(plugin, new RedeemConfig(Component.empty(), List.of(), categories, products,
+            SUCCESS_SOUND, FAILURE_SOUND), messages, service);
     }
 
     private void click(ActionButton button, Float amount, Player actor) {

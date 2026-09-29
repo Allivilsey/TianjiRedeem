@@ -15,8 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,16 +25,13 @@ public final class RedeemDialogs {
         .uses(1).lifetime(Duration.ofMinutes(10)).build();
 
     private final JavaPlugin plugin;
-    private final Map<String, String> categories;
-    private final List<RedeemProduct> products;
+    private final RedeemConfig config;
     private final Messages messages;
     private final RedeemService service;
 
-    public RedeemDialogs(JavaPlugin plugin, Map<String, String> categories, List<RedeemProduct> products,
-                         Messages messages, RedeemService service) {
+    public RedeemDialogs(JavaPlugin plugin, RedeemConfig config, Messages messages, RedeemService service) {
         this.plugin = plugin;
-        this.categories = Collections.unmodifiableMap(new LinkedHashMap<>(categories));
-        this.products = List.copyOf(products);
+        this.config = config;
         this.messages = messages;
         this.service = service;
     }
@@ -44,13 +39,13 @@ public final class RedeemDialogs {
     public void openCategories(Player player) {
         if (!canUse(player)) return;
         List<ActionButton> actions = new ArrayList<>();
-        for (var category : categories.entrySet()) {
-            if (products.stream().anyMatch(product -> product.category().equals(category.getKey()))) {
+        for (var category : config.categories().entrySet()) {
+            if (config.products().stream().anyMatch(product -> product.category().equals(category.getKey()))) {
                 actions.add(button(player, Component.text(category.getValue()),
                     (actor, response) -> openCatalog(actor, category.getKey())));
             }
         }
-        if (products.stream().anyMatch(product -> product.category().isEmpty())) {
+        if (config.products().stream().anyMatch(product -> product.category().isEmpty())) {
             actions.add(button(player, messages.text("dialog.catalog-title"),
                 (actor, response) -> openCatalog(actor, "")));
         }
@@ -58,13 +53,13 @@ public final class RedeemDialogs {
         player.showDialog(Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(messages.text("dialog.catalog-title"))
                 .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE)
-                .body(products.isEmpty() ? List.of(DialogBody.plainMessage(messages.text("dialog.catalog-empty"))) : List.of()).build())
+                .body(config.products().isEmpty() ? List.of(DialogBody.plainMessage(messages.text("dialog.catalog-empty"))) : List.of()).build())
             .type(actions.isEmpty() ? DialogType.notice(close) : DialogType.multiAction(actions, close, 2))));
     }
 
     private void openCatalog(Player player, String category) {
         List<ActionButton> actions = new ArrayList<>();
-        for (RedeemProduct product : products) {
+        for (RedeemProduct product : config.products()) {
             if (!product.category().equals(category)) continue;
             Component tooltip = product.name();
             if (product.paintingVariant() != null) {
@@ -75,21 +70,27 @@ public final class RedeemDialogs {
         }
         ActionButton back = button(player, messages.text("dialog.back"), (actor, response) -> openCategories(actor));
         player.showDialog(Dialog.create(builder -> builder.empty()
-            .base(DialogBase.builder(category.isEmpty() ? messages.text("dialog.catalog-title") : Component.text(categories.get(category)))
+            .base(DialogBase.builder(category.isEmpty() ? messages.text("dialog.catalog-title") : Component.text(config.categories().get(category)))
                 .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE).build())
             .type(DialogType.multiAction(actions, back, 9))));
     }
 
     private void openProduct(Player player, RedeemProduct product) {
+        openProduct(player, product, null);
+    }
+
+    private void openProduct(Player player, RedeemProduct product, Component error) {
+        List<DialogBody> body = new ArrayList<>();
+        if (error != null) body.add(DialogBody.plainMessage(error));
+        body.add(DialogBody.plainMessage(messages.text("dialog.balance",
+            Map.of("amount", Integer.toString(Vouchers.count(player.getInventory()))))));
+        body.add(DialogBody.item(product.createItem(), null, true, true, 32, 32));
+        body.add(DialogBody.plainMessage(messages.text("dialog.rate")));
         player.showDialog(Dialog.create(builder -> builder.empty()
             .base(DialogBase.builder(messages.textComponents("dialog.redeem-title",
                 Map.of("product", product.name())))
                 .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE)
-                .body(List.of(
-                    DialogBody.plainMessage(messages.text("dialog.balance",
-                        Map.of("amount", Integer.toString(Vouchers.count(player.getInventory()))))),
-                    DialogBody.item(product.createItem(), null, true, true, 32, 32),
-                    DialogBody.plainMessage(messages.text("dialog.rate"))))
+                .body(body)
                 .inputs(List.of(DialogInput.numberRange("amount", messages.text("dialog.amount"), 1F, 64F)
                     .initial(1F).step(1F).build()))
                 .build())
@@ -101,25 +102,16 @@ public final class RedeemDialogs {
     private void redeem(Player player, RedeemProduct product, DialogResponseView response) {
         Float value = response.getFloat("amount");
         if (value == null || !Float.isFinite(value) || value < 1 || value > 64 || value != Math.floor(value)) {
-            openResult(player, product, messages.text("dialog.invalid-amount"));
+            openProduct(player, product, messages.text("dialog.invalid-amount"));
+            player.playSound(config.failureSound());
             return;
         }
         int amount = value.intValue();
         boolean redeemed = service.redeem(player, product, amount);
-        Component result = messages.textComponents(redeemed ? "dialog.success" : "dialog.insufficient", Map.of(
+        openProduct(player, product, redeemed ? null : messages.textComponents("dialog.insufficient", Map.of(
             "product", product.name(), "amount", Component.text(amount),
-            "count", Component.text(redeemed ? 64 * amount : Vouchers.count(player.getInventory()))));
-        openResult(player, product, result);
-    }
-
-    private void openResult(Player player, RedeemProduct product, Component result) {
-        player.showDialog(Dialog.create(builder -> builder.empty()
-            .base(DialogBase.builder(messages.text("dialog.result-title"))
-                .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE)
-                .body(List.of(DialogBody.plainMessage(result))).build())
-            .type(DialogType.multiAction(List.of(
-                button(player, messages.text("dialog.continue"), (actor, response) -> openProduct(actor, product))),
-                button(player, messages.text("dialog.back"), (actor, response) -> openCatalog(actor, product.category())), 1))));
+            "count", Component.text(Vouchers.count(player.getInventory())))));
+        player.playSound(redeemed ? config.successSound() : config.failureSound());
     }
 
     private ActionButton button(Player owner, Component label, BiConsumer<Player, DialogResponseView> action) {

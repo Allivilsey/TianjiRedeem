@@ -17,8 +17,7 @@ public final class Messages {
             "command.given", "command.received", "command.failed", "dialog.catalog-title", "dialog.catalog-empty",
             "dialog.close", "dialog.redeem-title",
             "dialog.rate", "dialog.balance", "dialog.amount", "dialog.redeem", "dialog.back",
-            "dialog.result-title", "dialog.success", "dialog.insufficient", "dialog.invalid-amount",
-            "dialog.continue", "startup.invalid-config");
+            "dialog.insufficient", "dialog.invalid-amount", "startup.invalid-config");
 
     private final Map<String, String> texts;
 

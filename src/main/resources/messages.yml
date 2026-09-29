@@ -20,11 +20,8 @@ dialog:
   amount: '使用券数'
   redeem: '兑换'
   back: '返回'
-  result-title: '兑换结果'
-  success: '&a已使用 {amount} 张券兑换 {count} 个{product}。'
   insufficient: '&c兑换券不足，需要 {amount} 张，背包中有 {count} 张。'
   invalid-amount: '&c使用券数必须是 1～64 的整数。'
-  continue: '继续兑换'
 
 startup:
   invalid-config: '配置错误：{error}。请检查该位置的字段类型、材质及商品 ID，修正后重启。'
