@@ -36,26 +36,46 @@ public record RedeemConfig(Component voucherName,
             voucherLore.add(legacy.deserialize(line));
         }
         var categories = new LinkedHashMap<String, String>();
+        var products = new ArrayList<RedeemProduct>();
+        var identities = new HashSet<String>();
         if (config.contains("categories")) {
             ConfigurationSection section = config.getConfigurationSection("categories");
             if (section == null) throw invalid("categories");
             for (String id : section.getKeys(false)) {
-                categories.put(id, string(section.get(id), "categories." + id));
+                String path = "categories." + id;
+                if (section.isConfigurationSection(id)) {
+                    categories.put(id, string(config.get(path + ".name"), path + ".name"));
+                    products.addAll(products(config.get(path + ".products"), path + ".products", id, identities));
+                } else {
+                    categories.put(id, string(section.get(id), path));
+                }
             }
         }
-        Object configuredProducts = config.get("products");
-        if (!(configuredProducts instanceof List<?> entries)) throw invalid("products");
+        if (config.contains("products") || !config.contains("categories")) {
+            var legacyProducts = products(config.get("products"), "products", null, identities);
+            for (int i = 0; i < legacyProducts.size(); i++) {
+                String category = legacyProducts.get(i).category();
+                if (!category.isEmpty() && !categories.containsKey(category)) throw invalid("products[" + i + "].category");
+            }
+            products.addAll(legacyProducts);
+        }
+        if (config.contains("sounds") && !config.isConfigurationSection("sounds")) throw invalid("sounds");
+        return new RedeemConfig(voucherName, voucherLore, categories, products,
+                sound(config, "sounds.success", "minecraft:entity.experience_orb.pickup"),
+                sound(config, "sounds.failure", "minecraft:entity.villager.no"));
+    }
+
+    private static List<RedeemProduct> products(Object value, String listPath, String category, java.util.Set<String> identities) {
+        if (!(value instanceof List<?> entries)) throw invalid(listPath);
         var products = new ArrayList<RedeemProduct>();
-        var identities = new HashSet<String>();
         for (int index = 0; index < entries.size(); index++) {
-            String path = "products[" + index + "]";
+            String path = listPath + "[" + index + "]";
             Object entry = entries.get(index);
-            String category = "";
+            String productCategory = category == null ? "" : category;
             Art variant = null;
             Material material;
             if (entry instanceof Map<?, ?> fields) {
-                category = string(fields.get("category"), path + ".category");
-                if (!categories.containsKey(category)) throw invalid(path + ".category");
+                if (category == null) productCategory = string(fields.get("category"), path + ".category");
                 material = material(fields.get("material"), path + ".material");
                 if (fields.containsKey("painting-variant")) {
                     String variantPath = path + ".painting-variant";
@@ -67,12 +87,9 @@ public record RedeemConfig(Component voucherName,
                 material = material(entry, path);
             }
             if (!identities.add(material.name() + ":" + (variant == null ? "" : variant.getKey()))) throw invalid(path);
-            products.add(new RedeemProduct(category, material, variant));
+            products.add(new RedeemProduct(productCategory, material, variant));
         }
-        if (config.contains("sounds") && !config.isConfigurationSection("sounds")) throw invalid("sounds");
-        return new RedeemConfig(voucherName, voucherLore, categories, products,
-                sound(config, "sounds.success", "minecraft:entity.experience_orb.pickup"),
-                sound(config, "sounds.failure", "minecraft:entity.villager.no"));
+        return products;
     }
 
     private static Sound sound(ConfigurationSection config, String path, String defaultName) {

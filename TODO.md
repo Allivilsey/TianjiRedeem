@@ -23,7 +23,7 @@
 
 ## 商品目录与配置
 
-- categories 配置分类 ID 和名称；products 配置 material、category，指定画作另配 painting-variant。兼容旧的纯物品 ID 列表。
+- categories 下每个分类统一配置 name 和 products；普通商品直接填写物品 ID，指定画作另配 painting-variant。兼容旧的独立分类与商品配置及纯物品 ID 列表。
 - 所有商品使用固定的 1:64 比例，不设置独立价格或产物数量。
 - 目标材料必须是可以发放的物品；默认接入《建材分类.md》全部条目，具体商品由管理组调整。
 - 配置在启动时读取；配置错误应指出对应位置。

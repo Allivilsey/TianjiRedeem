@@ -142,12 +142,61 @@ class RedeemConfigTest {
     }
 
     @Test
+    void loadsProductsInsideCategoriesInOrder() throws Exception {
+        var config = RedeemConfig.load(yaml("""
+                categories:
+                  decor:
+                    name: 装饰
+                    products: [item_frame, {material: lantern}]
+                  painting:
+                    name: 画作
+                    products:
+                      - {material: painting, painting-variant: earth}
+                  empty:
+                    name: 空分类
+                    products: []
+                """));
+        assertEquals(java.util.List.of("decor", "painting", "empty"), java.util.List.copyOf(config.categories().keySet()));
+        assertEquals(java.util.List.of(new RedeemProduct("decor", Material.ITEM_FRAME, null),
+                new RedeemProduct("decor", Material.LANTERN, null),
+                new RedeemProduct("painting", Material.PAINTING, Art.EARTH)), config.products());
+        assertTrue(RedeemConfig.load(yaml("categories: {}")).products().isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"name", "products", "products[0]", "products[0].painting-variant"})
+    void reportsInvalidNestedFieldsAtTheirLocation(String field) throws Exception {
+        var config = yaml("categories: {decor: {name: 装饰, products: [lantern]}}");
+        switch (field) {
+            case "name" -> config.set("categories.decor.name", 123);
+            case "products" -> config.set("categories.decor.products", "lantern");
+            case "products[0]" -> config.set("categories.decor.products", java.util.List.of("air"));
+            case "products[0].painting-variant" -> config.set("categories.decor.products",
+                    java.util.List.of(java.util.Map.of("material", "painting", "painting-variant", "missing")));
+        }
+        assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
+                .getMessage().contains("config.yml: categories.decor." + field));
+    }
+
+    @Test
+    void rejectsDuplicateProductsAcrossNestedCategories() throws Exception {
+        var config = yaml("""
+                categories:
+                  first: {name: 第一类, products: [stone]}
+                  second: {name: 第二类, products: [minecraft:stone]}
+                """);
+        assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
+                .getMessage().contains("config.yml: categories.second.products[0]"));
+    }
+
+    @Test
     void bundledConfigurationIsValid() {
         try (var stream = getClass().getResourceAsStream("/config.yml")) {
             assertNotNull(stream);
             var yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
             var config = RedeemConfig.load(yaml);
             assertFalse(yaml.contains("voucher.material"));
+            assertFalse(yaml.contains("products"));
             assertEquals(10, config.categories().size());
             assertEquals(427, config.products().size());
             assertEquals(java.util.Map.of("wood", 40L, "stone", 39L, "masonry", 36L, "color", 48L,

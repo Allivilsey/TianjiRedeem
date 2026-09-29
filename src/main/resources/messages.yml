@@ -12,9 +12,11 @@ command:
 
 dialog:
   catalog-title: '建材兑换'
-  # 提示宽度跟随一行按钮的总宽度，高度自动适应；多行可使用 YAML 的 |- 写法。
-  category-hint: '&7请选择建材分类'
-  catalog-hint: '&7悬停查看名称，点击选择建材'
+  # 每个列表项显示为一行；宽度跟随一行按钮的总宽度，高度自动适应。
+  category-hint:
+    - '&7请选择建材分类'
+  catalog-hint:
+    - '&7悬停查看名称，点击选择建材'
   catalog-empty: '暂无可兑换材料。'
   close: '关闭'
   redeem-title: '{product}'

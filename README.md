@@ -41,33 +41,38 @@ sounds:
   success: {sound: minecraft:entity.experience_orb.pickup, volume: 1.0, pitch: 1.0}
   failure: {sound: minecraft:entity.villager.no, volume: 1.0, pitch: 1.0}
 categories:
-  stone: 石材与矿物
-  painting: 画作
-products:
-  - {material: minecraft:stone, category: stone}
-  - {material: minecraft:painting, category: painting, painting-variant: minecraft:earth}
+  stone:
+    name: 石材与矿物
+    products:
+      - minecraft:stone
+  painting:
+    name: 画作
+    products:
+      - {material: minecraft:painting, painting-variant: minecraft:earth}
 ```
 
-`categories` 配置分类 ID 与菜单名称；商品的 `category` 必须引用已配置分类。分类与商品均按配置顺序显示，空分类不显示。
-`material` 必须是可发放的原版物品 ID，`minecraft:` 前缀可省略，例如 `stone`；也接受 `STONE`。`products: []` 表示空目录。
+`categories` 中每个分类包含 `name`（菜单名称）与 `products`（该分类的商品），商品无需重复填写分类。分类与商品均按配置顺序显示，空分类不显示。
+普通商品直接填写可发放的原版物品 ID，`minecraft:` 前缀可省略，例如 `stone`；也接受 `STONE`。`categories: {}` 表示空目录，分类下 `products: []` 表示空分类。
 指定画作使用 `painting-variant`，预览和发放均保留该变体；同一物品和画作变体不能重复配置到多个分类。
 目录和兑换页使用原版物品名称或画作标题，随玩家客户端语言显示。单件不可堆叠的物品也按每券 64 个兑换，商品没有独立价格或产物数量。
 
 `sounds.success`、`sounds.failure` 分别配置兑换成功和失败的音效：`sound` 为原版音效 ID，`volume` 为非负音量（0 表示静音），`pitch` 为大于 0 的音调。音效仅向操作玩家播放，使用主音量通道；客户端静音时听不到。旧配置缺少这些字段时使用上例默认值，修改后重启生效。
 
 默认目录包含《建材分类.md》的 10 类、425 个条目（含 51 幅指定画作），另保留原有石砖和橡木木板，共 427 项，全部沿用每券 64 个的比例。
-旧版纯 ID 列表仍可读取，集中到默认目录入口；要启用新的分类与商品，请将随插件提供的 `config.yml` 中 `categories`、`products` 合并到服务器配置，重启生效。已有服务器配置不会被覆盖。
+兼容旧版独立的分类名称映射与顶层 `products`，旧版纯 ID 列表仍集中到默认目录入口。迁移时，将商品移到对应分类的 `products` 下，删除商品中的 `category` 和旧的顶层 `products`；已有服务器配置不会被自动覆盖，修改后重启生效。
 
 `messages.yml` 包含按钮、界面及命令提示。兑换券外观统一由 `config.yml` 的 `voucher` 节点配置。
-分类菜单和物品目录的提示分别配置在 `dialog.category-hint`、`dialog.catalog-hint`，显示于标题与按钮之间。文本换行宽度按实际一行按钮总宽度（含间距）计算，高度由客户端根据内容自动调整；支持自动换行和 YAML 多行文本，例如：
+分类菜单和物品目录的提示分别配置在 `dialog.category-hint`、`dialog.catalog-hint`，显示于标题与按钮之间。文本换行宽度按实际一行按钮总宽度（含间距）计算，高度由客户端根据内容自动调整。每个列表项显示为一行，长行自动换行，空字符串可留空行，例如：
 
 ```yaml
-  catalog-hint: |-
-    &7悬停查看名称
-    &7点击选择建材
+  category-hint:
+    - '&7请选择建材分类'
+  catalog-hint:
+    - '&7悬停查看名称'
+    - '&7点击选择建材'
 ```
 
-已有 `messages.yml` 需在 `dialog` 下补充 `category-hint: '&7请选择建材分类'`、`catalog-hint: '&7悬停查看名称，点击选择建材'`，重启生效。
+已有 `messages.yml` 需在 `dialog` 下补充上述两个提示字段，重启生效；兼容之前的字符串写法。
 支持 `&` 颜色代码；保留消息原有的 `{amount}` 等占位符。`{product}` 显示原版物品名称。
 名称和描述只影响新发放的券，修改外观不会使已有券失效。旧券仍可兑换，但不会自动修改其堆叠上限；新券最多堆叠 64 张，相同数据的券才能合并。
 

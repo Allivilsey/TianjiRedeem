@@ -32,6 +32,19 @@ class MessagesTest {
     }
 
     @Test
+    void loadsHintLinesAndPreservesBlankLines() {
+        var config = defaults();
+        config.set("dialog.category-hint", "&7请选择建材分类");
+        config.set("dialog.catalog-hint", java.util.List.of("&7悬停查看名称", "", "&7点击选择建材"));
+        var messages = Messages.load(config);
+        assertEquals("请选择建材分类", messages.plain("dialog.category-hint", Map.of()));
+        assertEquals("悬停查看名称\n\n点击选择建材", messages.plain("dialog.catalog-hint", Map.of()));
+        config.set("dialog.catalog-hint", java.util.List.of("第一行", 123));
+        assertTrue(assertThrows(IllegalArgumentException.class, () -> Messages.load(config))
+                .getMessage().contains("messages.yml: dialog.catalog-hint[1]"));
+    }
+
+    @Test
     void doesNotRequireVoucherSettingsInMessages() {
         var config = defaults();
         config.set("voucher", null);
