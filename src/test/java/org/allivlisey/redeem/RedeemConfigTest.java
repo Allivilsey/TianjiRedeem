@@ -1,6 +1,8 @@
 package org.allivlisey.redeem;
 
 import org.bukkit.Material;
+import org.bukkit.Art;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,8 +27,9 @@ class RedeemConfigTest {
                   - minecraft:stone
                   - shulker_box
                 """));
-        assertEquals(Material.STONE, config.products().getFirst());
-        assertEquals(Material.SHULKER_BOX, config.products().get(1));
+        assertEquals(Material.STONE, config.products().getFirst().material());
+        assertEquals(Material.SHULKER_BOX, config.products().get(1).material());
+        assertEquals("", config.products().getFirst().category());
         assertThrows(UnsupportedOperationException.class, () -> config.products().clear());
     }
 
@@ -37,8 +40,8 @@ class RedeemConfigTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"DIAMOND_SWORD", "WATER", "AIR", "NOT_A_MATERIAL"})
-    void rejectsProductsThatCannotBeGivenAsBlocks(String material) throws Exception {
+    @ValueSource(strings = {"WATER", "AIR", "NOT_A_MATERIAL"})
+    void rejectsProductsThatCannotBeGivenAsItems(String material) throws Exception {
         var config = yaml("products:\n  - " + material);
         var error = assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config));
         assertTrue(error.getMessage().contains("config.yml: products[0]"));
@@ -104,10 +107,61 @@ class RedeemConfigTest {
             var yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
             var config = RedeemConfig.load(yaml);
             assertFalse(yaml.contains("voucher.material"));
-            assertFalse(config.products().isEmpty());
+            assertEquals(10, config.categories().size());
+            assertEquals(427, config.products().size());
+            assertEquals(java.util.Map.of("wood", 40L, "stone", 39L, "masonry", 36L, "color", 48L,
+                    "glass", 35L, "terrain", 38L, "plants", 53L, "aquatic", 35L, "decor", 52L, "painting", 51L),
+                    config.products().stream().collect(java.util.stream.Collectors.groupingBy(
+                            RedeemProduct::category, java.util.stream.Collectors.counting())));
         } catch (java.io.IOException e) {
             throw new AssertionError(e);
         }
+    }
+
+    @Test
+    void loadsCategoriesNonBlockItemsAndDistinctPaintingVariants() throws Exception {
+        var config = RedeemConfig.load(yaml("""
+                categories:
+                  decor: 装饰
+                  painting: 画作
+                products:
+                  - {material: item_frame, category: decor}
+                  - {material: painting, category: painting, painting-variant: minecraft:earth}
+                  - {material: painting, category: painting, painting-variant: minecraft:wind}
+                """));
+        assertEquals(java.util.List.of("decor", "painting"), java.util.List.copyOf(config.categories().keySet()));
+        assertEquals(Material.ITEM_FRAME, config.products().getFirst().material());
+        var earth = config.products().get(1);
+        assertEquals("painting", earth.category());
+        assertEquals(Art.EARTH, earth.paintingVariant());
+        assertEquals(Art.EARTH.title(), earth.name());
+        assertEquals(Art.EARTH, earth.createItem().getData(DataComponentTypes.PAINTING_VARIANT));
+        assertEquals(Art.WIND, config.products().get(2).createItem().getData(DataComponentTypes.PAINTING_VARIANT));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{material: stone, category: missing}",
+            "{material: stone, category: decor, painting-variant: earth}",
+            "{material: painting, category: decor, painting-variant: missing}",
+            "{material: painting, category: decor, painting-variant: 'INVALID KEY'}"
+    })
+    void rejectsUnknownCategoryOrInvalidPaintingVariant(String entry) throws Exception {
+        var config = yaml("categories: {decor: 装饰}\nproducts:\n  - " + entry);
+        assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
+                .getMessage().contains("config.yml: products[0]."));
+    }
+
+    @Test
+    void rejectsSamePaintingInDifferentCategories() throws Exception {
+        var config = yaml("""
+                categories: {first: 第一类, second: 第二类}
+                products:
+                  - {material: painting, category: first, painting-variant: earth}
+                  - {material: minecraft:painting, category: second, painting-variant: minecraft:earth}
+                """);
+        assertTrue(assertThrows(IllegalArgumentException.class, () -> RedeemConfig.load(config))
+                .getMessage().contains("config.yml: products[1]"));
     }
 
     private static YamlConfiguration yaml(String source) throws Exception {

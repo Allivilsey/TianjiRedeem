@@ -1,6 +1,8 @@
 package org.allivlisey.redeem;
 
 import org.bukkit.Material;
+import org.bukkit.Art;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
@@ -117,7 +119,7 @@ class RedemptionTest {
     @ValueSource(ints = {1, 64})
     void conservesVouchersAndProducts(int amount) {
         player.getInventory().setItem(0, voucher(64));
-        assertTrue(service.redeem(player, Material.STONE, amount));
+        assertTrue(service.redeem(player, product(Material.STONE), amount));
         assertEquals(64 - amount, Vouchers.count(player.getInventory()));
         assertEquals(amount * 64, produced(Material.STONE));
         for (ItemStack item : player.getInventory().getStorageContents()) {
@@ -134,7 +136,7 @@ class RedemptionTest {
         assertEquals(2, Vouchers.count(player.getInventory()));
         player.getInventory().setItem(0, voucher(1));
         ItemStack[] before = player.getInventory().getContents();
-        assertFalse(service.redeem(player, Material.STONE, 2));
+        assertFalse(service.redeem(player, product(Material.STONE), 2));
         assertArrayEquals(before, player.getInventory().getContents());
         assertEquals(0, produced(Material.STONE));
     }
@@ -143,7 +145,7 @@ class RedemptionTest {
     @ValueSource(ints = {-1, 0, 65})
     void invalidAmountCannotConsume(int amount) {
         player.getInventory().setItem(0, voucher(64));
-        assertThrows(IllegalArgumentException.class, () -> service.redeem(player, Material.STONE, amount));
+        assertThrows(IllegalArgumentException.class, () -> service.redeem(player, product(Material.STONE), amount));
         assertEquals(64, Vouchers.count(player.getInventory()));
         assertEquals(0, produced(Material.STONE));
     }
@@ -152,10 +154,10 @@ class RedemptionTest {
     void fullInventoryDropsAllOverflowAndUsesFreedVoucherSlot() {
         for (int slot = 0; slot < 36; slot++) player.getInventory().setItem(slot, new ItemStack(Material.DIRT, 64));
         player.getInventory().setItem(0, voucher(2));
-        assertTrue(service.redeem(player, Material.STONE, 1));
+        assertTrue(service.redeem(player, product(Material.STONE), 1));
         assertEquals(64, produced(Material.STONE));
         assertEquals(64, dropped(Material.STONE));
-        assertTrue(service.redeem(player, Material.STONE, 1));
+        assertTrue(service.redeem(player, product(Material.STONE), 1));
         assertEquals(128, produced(Material.STONE));
         assertEquals(64, dropped(Material.STONE));
     }
@@ -164,10 +166,10 @@ class RedemptionTest {
     void mergesExistingStacksAndSplitsUnstackableBlocksNormally() {
         player.getInventory().setItem(0, voucher(2));
         player.getInventory().setItem(1, new ItemStack(Material.STONE, 32));
-        assertTrue(service.redeem(player, Material.STONE, 1));
+        assertTrue(service.redeem(player, product(Material.STONE), 1));
         assertEquals(64, player.getInventory().getItem(1).getAmount());
         assertEquals(96, produced(Material.STONE));
-        assertTrue(service.redeem(player, Material.SHULKER_BOX, 1));
+        assertTrue(service.redeem(player, product(Material.SHULKER_BOX), 1));
         assertEquals(64, produced(Material.SHULKER_BOX));
         for (var entity : player.getWorld().getEntities()) {
             if (entity instanceof Item item && item.getItemStack().getType() == Material.SHULKER_BOX) {
@@ -176,6 +178,25 @@ class RedemptionTest {
                 assertTrue(item.getItemStack().getPersistentDataContainer().isEmpty());
             }
         }
+    }
+
+    @Test
+    void redeemsSelectedPaintingVariantUsingTheSameTemplateAsPreview() {
+        player.getInventory().setItem(0, voucher(2));
+        var painting = new RedeemProduct("painting", Material.PAINTING, Art.EARTH);
+        // MockBukkit's stack clone drops data components, so capture the delivery boundary.
+        try (var delivery = org.mockito.Mockito.mockStatic(ItemDelivery.class)) {
+            assertTrue(service.redeem(player, painting, 2));
+            assertEquals(0, Vouchers.count(player.getInventory()));
+            delivery.verify(() -> ItemDelivery.give(org.mockito.ArgumentMatchers.eq(player),
+                    org.mockito.ArgumentMatchers.argThat(item -> item.getType() == Material.PAINTING
+                            && item.getData(DataComponentTypes.PAINTING_VARIANT) == Art.EARTH),
+                    org.mockito.ArgumentMatchers.eq(128)));
+        }
+    }
+
+    private static RedeemProduct product(Material material) {
+        return new RedeemProduct("", material, null);
     }
 
     private int produced(Material material) {

@@ -55,14 +55,14 @@ class RedeemCommandTest {
     }
 
     @Test
-    void playerWithUsePermissionOpensFirstCatalogPage() {
+    void playerWithUsePermissionOpensCategories() {
         assertTrue(run(player));
-        verify(dialogs).openCatalog(player, 0);
+        verify(dialogs).openCategories(player);
     }
 
     @Test
     void unexpectedFailureUsesConfiguredMessage() {
-        doThrow(new IllegalStateException("dialog unavailable")).when(dialogs).openCatalog(player, 0);
+        doThrow(new IllegalStateException("dialog unavailable")).when(dialogs).openCategories(player);
         run(player);
         assertEquals(Component.text("command.failed"), player.nextComponentMessage());
     }

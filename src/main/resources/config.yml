@@ -7,10 +7,456 @@ voucher:
     - '&7在需要的时候'
     - '&7也可以在菜单中换取建材'
 
-# 这里用于配置可兑换方块的方块ID。
+# 兑换菜单中的建材分类。
+categories:
+  wood: 木材与树木
+  stone: 石材与矿物
+  masonry: 陶材与树脂
+  color: 混凝土与羊毛
+  glass: 玻璃
+  terrain: 地形与自然方块
+  plants: 花草与植被
+  aquatic: 水生与珊瑚
+  decor: 照明与装饰
+  painting: 画作
+
+# 物品 ID 与所属分类；指定画作须填写 painting-variant。
 # 使用 products: [] 可清空目录。
 products:
-  - minecraft:stone
-  - minecraft:stone_bricks
-  - minecraft:oak_planks
-  - minecraft:glass
+  # 木材与树木
+  - {material: minecraft:oak_log, category: wood}
+  - {material: minecraft:spruce_log, category: wood}
+  - {material: minecraft:birch_log, category: wood}
+  - {material: minecraft:jungle_log, category: wood}
+  - {material: minecraft:acacia_log, category: wood}
+  - {material: minecraft:dark_oak_log, category: wood}
+  - {material: minecraft:mangrove_log, category: wood}
+  - {material: minecraft:cherry_log, category: wood}
+  - {material: minecraft:pale_oak_log, category: wood}
+  - {material: minecraft:crimson_stem, category: wood}
+  - {material: minecraft:crimson_hyphae, category: wood}
+  - {material: minecraft:warped_stem, category: wood}
+  - {material: minecraft:warped_hyphae, category: wood}
+  - {material: minecraft:bamboo_block, category: wood}
+  - {material: minecraft:oak_leaves, category: wood}
+  - {material: minecraft:spruce_leaves, category: wood}
+  - {material: minecraft:birch_leaves, category: wood}
+  - {material: minecraft:jungle_leaves, category: wood}
+  - {material: minecraft:acacia_leaves, category: wood}
+  - {material: minecraft:dark_oak_leaves, category: wood}
+  - {material: minecraft:mangrove_leaves, category: wood}
+  - {material: minecraft:cherry_leaves, category: wood}
+  - {material: minecraft:pale_oak_leaves, category: wood}
+  - {material: minecraft:azalea_leaves, category: wood}
+  - {material: minecraft:flowering_azalea_leaves, category: wood}
+  - {material: minecraft:oak_sapling, category: wood}
+  - {material: minecraft:spruce_sapling, category: wood}
+  - {material: minecraft:birch_sapling, category: wood}
+  - {material: minecraft:jungle_sapling, category: wood}
+  - {material: minecraft:acacia_sapling, category: wood}
+  - {material: minecraft:dark_oak_sapling, category: wood}
+  - {material: minecraft:cherry_sapling, category: wood}
+  - {material: minecraft:pale_oak_sapling, category: wood}
+  - {material: minecraft:mangrove_propagule, category: wood}
+  - {material: minecraft:azalea, category: wood}
+  - {material: minecraft:flowering_azalea, category: wood}
+  - {material: minecraft:mangrove_roots, category: wood}
+  - {material: minecraft:muddy_mangrove_roots, category: wood}
+  - {material: minecraft:hanging_roots, category: wood}
+  - {material: minecraft:oak_planks, category: wood}
+  # 石材与矿物
+  - {material: minecraft:stone, category: stone}
+  - {material: minecraft:cobblestone, category: stone}
+  - {material: minecraft:granite, category: stone}
+  - {material: minecraft:diorite, category: stone}
+  - {material: minecraft:andesite, category: stone}
+  - {material: minecraft:deepslate, category: stone}
+  - {material: minecraft:cobbled_deepslate, category: stone}
+  - {material: minecraft:tuff, category: stone}
+  - {material: minecraft:calcite, category: stone}
+  - {material: minecraft:dripstone_block, category: stone}
+  - {material: minecraft:pointed_dripstone, category: stone}
+  - {material: minecraft:sandstone, category: stone}
+  - {material: minecraft:red_sandstone, category: stone}
+  - {material: minecraft:basalt, category: stone}
+  - {material: minecraft:blackstone, category: stone}
+  - {material: minecraft:gilded_blackstone, category: stone}
+  - {material: minecraft:prismarine, category: stone}
+  - {material: minecraft:dark_prismarine, category: stone}
+  - {material: minecraft:quartz_block, category: stone}
+  - {material: minecraft:netherrack, category: stone}
+  - {material: minecraft:end_stone, category: stone}
+  - {material: minecraft:purpur_block, category: stone}
+  - {material: minecraft:obsidian, category: stone}
+  - {material: minecraft:crying_obsidian, category: stone}
+  - {material: minecraft:cinnabar, category: stone}
+  - {material: minecraft:sulfur, category: stone}
+  - {material: minecraft:sulfur_spike, category: stone}
+  - {material: minecraft:potent_sulfur, category: stone}
+  - {material: minecraft:magma_block, category: stone}
+  - {material: minecraft:waxed_copper_block, category: stone}
+  - {material: minecraft:waxed_exposed_copper, category: stone}
+  - {material: minecraft:waxed_weathered_copper, category: stone}
+  - {material: minecraft:waxed_oxidized_copper, category: stone}
+  - {material: minecraft:amethyst_block, category: stone}
+  - {material: minecraft:small_amethyst_bud, category: stone}
+  - {material: minecraft:medium_amethyst_bud, category: stone}
+  - {material: minecraft:large_amethyst_bud, category: stone}
+  - {material: minecraft:amethyst_cluster, category: stone}
+  - {material: minecraft:stone_bricks, category: stone}
+  # 陶材与树脂
+  - {material: minecraft:packed_mud, category: masonry}
+  - {material: minecraft:resin_block, category: masonry}
+  - {material: minecraft:resin_clump, category: masonry}
+  - {material: minecraft:terracotta, category: masonry}
+  - {material: minecraft:white_terracotta, category: masonry}
+  - {material: minecraft:light_gray_terracotta, category: masonry}
+  - {material: minecraft:gray_terracotta, category: masonry}
+  - {material: minecraft:black_terracotta, category: masonry}
+  - {material: minecraft:brown_terracotta, category: masonry}
+  - {material: minecraft:red_terracotta, category: masonry}
+  - {material: minecraft:orange_terracotta, category: masonry}
+  - {material: minecraft:yellow_terracotta, category: masonry}
+  - {material: minecraft:lime_terracotta, category: masonry}
+  - {material: minecraft:green_terracotta, category: masonry}
+  - {material: minecraft:cyan_terracotta, category: masonry}
+  - {material: minecraft:light_blue_terracotta, category: masonry}
+  - {material: minecraft:blue_terracotta, category: masonry}
+  - {material: minecraft:purple_terracotta, category: masonry}
+  - {material: minecraft:magenta_terracotta, category: masonry}
+  - {material: minecraft:pink_terracotta, category: masonry}
+  - {material: minecraft:white_glazed_terracotta, category: masonry}
+  - {material: minecraft:light_gray_glazed_terracotta, category: masonry}
+  - {material: minecraft:gray_glazed_terracotta, category: masonry}
+  - {material: minecraft:black_glazed_terracotta, category: masonry}
+  - {material: minecraft:brown_glazed_terracotta, category: masonry}
+  - {material: minecraft:red_glazed_terracotta, category: masonry}
+  - {material: minecraft:orange_glazed_terracotta, category: masonry}
+  - {material: minecraft:yellow_glazed_terracotta, category: masonry}
+  - {material: minecraft:lime_glazed_terracotta, category: masonry}
+  - {material: minecraft:green_glazed_terracotta, category: masonry}
+  - {material: minecraft:cyan_glazed_terracotta, category: masonry}
+  - {material: minecraft:light_blue_glazed_terracotta, category: masonry}
+  - {material: minecraft:blue_glazed_terracotta, category: masonry}
+  - {material: minecraft:purple_glazed_terracotta, category: masonry}
+  - {material: minecraft:magenta_glazed_terracotta, category: masonry}
+  - {material: minecraft:pink_glazed_terracotta, category: masonry}
+  # 混凝土与羊毛
+  - {material: minecraft:white_concrete, category: color}
+  - {material: minecraft:light_gray_concrete, category: color}
+  - {material: minecraft:gray_concrete, category: color}
+  - {material: minecraft:black_concrete, category: color}
+  - {material: minecraft:brown_concrete, category: color}
+  - {material: minecraft:red_concrete, category: color}
+  - {material: minecraft:orange_concrete, category: color}
+  - {material: minecraft:yellow_concrete, category: color}
+  - {material: minecraft:lime_concrete, category: color}
+  - {material: minecraft:green_concrete, category: color}
+  - {material: minecraft:cyan_concrete, category: color}
+  - {material: minecraft:light_blue_concrete, category: color}
+  - {material: minecraft:blue_concrete, category: color}
+  - {material: minecraft:purple_concrete, category: color}
+  - {material: minecraft:magenta_concrete, category: color}
+  - {material: minecraft:pink_concrete, category: color}
+  - {material: minecraft:white_concrete_powder, category: color}
+  - {material: minecraft:light_gray_concrete_powder, category: color}
+  - {material: minecraft:gray_concrete_powder, category: color}
+  - {material: minecraft:black_concrete_powder, category: color}
+  - {material: minecraft:brown_concrete_powder, category: color}
+  - {material: minecraft:red_concrete_powder, category: color}
+  - {material: minecraft:orange_concrete_powder, category: color}
+  - {material: minecraft:yellow_concrete_powder, category: color}
+  - {material: minecraft:lime_concrete_powder, category: color}
+  - {material: minecraft:green_concrete_powder, category: color}
+  - {material: minecraft:cyan_concrete_powder, category: color}
+  - {material: minecraft:light_blue_concrete_powder, category: color}
+  - {material: minecraft:blue_concrete_powder, category: color}
+  - {material: minecraft:purple_concrete_powder, category: color}
+  - {material: minecraft:magenta_concrete_powder, category: color}
+  - {material: minecraft:pink_concrete_powder, category: color}
+  - {material: minecraft:white_wool, category: color}
+  - {material: minecraft:light_gray_wool, category: color}
+  - {material: minecraft:gray_wool, category: color}
+  - {material: minecraft:black_wool, category: color}
+  - {material: minecraft:brown_wool, category: color}
+  - {material: minecraft:red_wool, category: color}
+  - {material: minecraft:orange_wool, category: color}
+  - {material: minecraft:yellow_wool, category: color}
+  - {material: minecraft:lime_wool, category: color}
+  - {material: minecraft:green_wool, category: color}
+  - {material: minecraft:cyan_wool, category: color}
+  - {material: minecraft:light_blue_wool, category: color}
+  - {material: minecraft:blue_wool, category: color}
+  - {material: minecraft:purple_wool, category: color}
+  - {material: minecraft:magenta_wool, category: color}
+  - {material: minecraft:pink_wool, category: color}
+  # 玻璃
+  - {material: minecraft:glass, category: glass}
+  - {material: minecraft:glass_pane, category: glass}
+  - {material: minecraft:tinted_glass, category: glass}
+  - {material: minecraft:white_stained_glass, category: glass}
+  - {material: minecraft:light_gray_stained_glass, category: glass}
+  - {material: minecraft:gray_stained_glass, category: glass}
+  - {material: minecraft:black_stained_glass, category: glass}
+  - {material: minecraft:brown_stained_glass, category: glass}
+  - {material: minecraft:red_stained_glass, category: glass}
+  - {material: minecraft:orange_stained_glass, category: glass}
+  - {material: minecraft:yellow_stained_glass, category: glass}
+  - {material: minecraft:lime_stained_glass, category: glass}
+  - {material: minecraft:green_stained_glass, category: glass}
+  - {material: minecraft:cyan_stained_glass, category: glass}
+  - {material: minecraft:light_blue_stained_glass, category: glass}
+  - {material: minecraft:blue_stained_glass, category: glass}
+  - {material: minecraft:purple_stained_glass, category: glass}
+  - {material: minecraft:magenta_stained_glass, category: glass}
+  - {material: minecraft:pink_stained_glass, category: glass}
+  - {material: minecraft:white_stained_glass_pane, category: glass}
+  - {material: minecraft:light_gray_stained_glass_pane, category: glass}
+  - {material: minecraft:gray_stained_glass_pane, category: glass}
+  - {material: minecraft:black_stained_glass_pane, category: glass}
+  - {material: minecraft:brown_stained_glass_pane, category: glass}
+  - {material: minecraft:red_stained_glass_pane, category: glass}
+  - {material: minecraft:orange_stained_glass_pane, category: glass}
+  - {material: minecraft:yellow_stained_glass_pane, category: glass}
+  - {material: minecraft:lime_stained_glass_pane, category: glass}
+  - {material: minecraft:green_stained_glass_pane, category: glass}
+  - {material: minecraft:cyan_stained_glass_pane, category: glass}
+  - {material: minecraft:light_blue_stained_glass_pane, category: glass}
+  - {material: minecraft:blue_stained_glass_pane, category: glass}
+  - {material: minecraft:purple_stained_glass_pane, category: glass}
+  - {material: minecraft:magenta_stained_glass_pane, category: glass}
+  - {material: minecraft:pink_stained_glass_pane, category: glass}
+  # 地形与自然方块
+  - {material: minecraft:dirt, category: terrain}
+  - {material: minecraft:grass_block, category: terrain}
+  - {material: minecraft:coarse_dirt, category: terrain}
+  - {material: minecraft:podzol, category: terrain}
+  - {material: minecraft:mycelium, category: terrain}
+  - {material: minecraft:rooted_dirt, category: terrain}
+  - {material: minecraft:mud, category: terrain}
+  - {material: minecraft:clay, category: terrain}
+  - {material: minecraft:sand, category: terrain}
+  - {material: minecraft:red_sand, category: terrain}
+  - {material: minecraft:gravel, category: terrain}
+  - {material: minecraft:soul_sand, category: terrain}
+  - {material: minecraft:soul_soil, category: terrain}
+  - {material: minecraft:ice, category: terrain}
+  - {material: minecraft:packed_ice, category: terrain}
+  - {material: minecraft:blue_ice, category: terrain}
+  - {material: minecraft:snow_block, category: terrain}
+  - {material: minecraft:snow, category: terrain}
+  - {material: minecraft:moss_block, category: terrain}
+  - {material: minecraft:pale_moss_block, category: terrain}
+  - {material: minecraft:leaf_litter, category: terrain}
+  - {material: minecraft:red_mushroom_block, category: terrain}
+  - {material: minecraft:brown_mushroom_block, category: terrain}
+  - {material: minecraft:mushroom_stem, category: terrain}
+  - {material: minecraft:crimson_nylium, category: terrain}
+  - {material: minecraft:warped_nylium, category: terrain}
+  - {material: minecraft:nether_wart_block, category: terrain}
+  - {material: minecraft:warped_wart_block, category: terrain}
+  - {material: minecraft:bone_block, category: terrain}
+  - {material: minecraft:hay_block, category: terrain}
+  - {material: minecraft:dried_kelp_block, category: terrain}
+  - {material: minecraft:honeycomb_block, category: terrain}
+  - {material: minecraft:honey_block, category: terrain}
+  - {material: minecraft:slime_block, category: terrain}
+  - {material: minecraft:pumpkin, category: terrain}
+  - {material: minecraft:melon, category: terrain}
+  - {material: minecraft:sculk, category: terrain}
+  - {material: minecraft:sculk_vein, category: terrain}
+  # 花草与植被
+  - {material: minecraft:pale_hanging_moss, category: plants}
+  - {material: minecraft:short_grass, category: plants}
+  - {material: minecraft:tall_grass, category: plants}
+  - {material: minecraft:fern, category: plants}
+  - {material: minecraft:large_fern, category: plants}
+  - {material: minecraft:bush, category: plants}
+  - {material: minecraft:dead_bush, category: plants}
+  - {material: minecraft:short_dry_grass, category: plants}
+  - {material: minecraft:tall_dry_grass, category: plants}
+  - {material: minecraft:firefly_bush, category: plants}
+  - {material: minecraft:dandelion, category: plants}
+  - {material: minecraft:poppy, category: plants}
+  - {material: minecraft:blue_orchid, category: plants}
+  - {material: minecraft:allium, category: plants}
+  - {material: minecraft:azure_bluet, category: plants}
+  - {material: minecraft:red_tulip, category: plants}
+  - {material: minecraft:orange_tulip, category: plants}
+  - {material: minecraft:white_tulip, category: plants}
+  - {material: minecraft:pink_tulip, category: plants}
+  - {material: minecraft:oxeye_daisy, category: plants}
+  - {material: minecraft:cornflower, category: plants}
+  - {material: minecraft:lily_of_the_valley, category: plants}
+  - {material: minecraft:torchflower, category: plants}
+  - {material: minecraft:cactus_flower, category: plants}
+  - {material: minecraft:open_eyeblossom, category: plants}
+  - {material: minecraft:closed_eyeblossom, category: plants}
+  - {material: minecraft:sunflower, category: plants}
+  - {material: minecraft:lilac, category: plants}
+  - {material: minecraft:rose_bush, category: plants}
+  - {material: minecraft:peony, category: plants}
+  - {material: minecraft:pitcher_plant, category: plants}
+  - {material: minecraft:pink_petals, category: plants}
+  - {material: minecraft:wildflowers, category: plants}
+  - {material: minecraft:red_mushroom, category: plants}
+  - {material: minecraft:brown_mushroom, category: plants}
+  - {material: minecraft:crimson_fungus, category: plants}
+  - {material: minecraft:warped_fungus, category: plants}
+  - {material: minecraft:crimson_roots, category: plants}
+  - {material: minecraft:warped_roots, category: plants}
+  - {material: minecraft:nether_sprouts, category: plants}
+  - {material: minecraft:vine, category: plants}
+  - {material: minecraft:weeping_vines, category: plants}
+  - {material: minecraft:twisting_vines, category: plants}
+  - {material: minecraft:glow_lichen, category: plants}
+  - {material: minecraft:glow_berries, category: plants}
+  - {material: minecraft:bamboo, category: plants}
+  - {material: minecraft:cactus, category: plants}
+  - {material: minecraft:sugar_cane, category: plants}
+  - {material: minecraft:small_dripleaf, category: plants}
+  - {material: minecraft:big_dripleaf, category: plants}
+  - {material: minecraft:spore_blossom, category: plants}
+  - {material: minecraft:chorus_flower, category: plants}
+  - {material: minecraft:chorus_plant, category: plants}
+  # 水生与珊瑚
+  - {material: minecraft:kelp, category: aquatic}
+  - {material: minecraft:seagrass, category: aquatic}
+  - {material: minecraft:lily_pad, category: aquatic}
+  - {material: minecraft:sea_pickle, category: aquatic}
+  - {material: minecraft:tube_coral_block, category: aquatic}
+  - {material: minecraft:tube_coral, category: aquatic}
+  - {material: minecraft:tube_coral_fan, category: aquatic}
+  - {material: minecraft:dead_tube_coral_block, category: aquatic}
+  - {material: minecraft:dead_tube_coral, category: aquatic}
+  - {material: minecraft:dead_tube_coral_fan, category: aquatic}
+  - {material: minecraft:brain_coral_block, category: aquatic}
+  - {material: minecraft:brain_coral, category: aquatic}
+  - {material: minecraft:brain_coral_fan, category: aquatic}
+  - {material: minecraft:dead_brain_coral_block, category: aquatic}
+  - {material: minecraft:dead_brain_coral, category: aquatic}
+  - {material: minecraft:dead_brain_coral_fan, category: aquatic}
+  - {material: minecraft:bubble_coral_block, category: aquatic}
+  - {material: minecraft:bubble_coral, category: aquatic}
+  - {material: minecraft:bubble_coral_fan, category: aquatic}
+  - {material: minecraft:dead_bubble_coral_block, category: aquatic}
+  - {material: minecraft:dead_bubble_coral, category: aquatic}
+  - {material: minecraft:dead_bubble_coral_fan, category: aquatic}
+  - {material: minecraft:fire_coral_block, category: aquatic}
+  - {material: minecraft:fire_coral, category: aquatic}
+  - {material: minecraft:fire_coral_fan, category: aquatic}
+  - {material: minecraft:dead_fire_coral_block, category: aquatic}
+  - {material: minecraft:dead_fire_coral, category: aquatic}
+  - {material: minecraft:dead_fire_coral_fan, category: aquatic}
+  - {material: minecraft:horn_coral_block, category: aquatic}
+  - {material: minecraft:horn_coral, category: aquatic}
+  - {material: minecraft:horn_coral_fan, category: aquatic}
+  - {material: minecraft:dead_horn_coral_block, category: aquatic}
+  - {material: minecraft:dead_horn_coral, category: aquatic}
+  - {material: minecraft:dead_horn_coral_fan, category: aquatic}
+  - {material: minecraft:sponge, category: aquatic}
+  # 照明与装饰
+  - {material: minecraft:glowstone, category: decor}
+  - {material: minecraft:sea_lantern, category: decor}
+  - {material: minecraft:shroomlight, category: decor}
+  - {material: minecraft:ochre_froglight, category: decor}
+  - {material: minecraft:verdant_froglight, category: decor}
+  - {material: minecraft:pearlescent_froglight, category: decor}
+  - {material: minecraft:torch, category: decor}
+  - {material: minecraft:soul_torch, category: decor}
+  - {material: minecraft:copper_torch, category: decor}
+  - {material: minecraft:lantern, category: decor}
+  - {material: minecraft:soul_lantern, category: decor}
+  - {material: minecraft:end_rod, category: decor}
+  - {material: minecraft:waxed_copper_lantern, category: decor}
+  - {material: minecraft:waxed_exposed_copper_lantern, category: decor}
+  - {material: minecraft:waxed_weathered_copper_lantern, category: decor}
+  - {material: minecraft:waxed_oxidized_copper_lantern, category: decor}
+  - {material: minecraft:waxed_copper_bulb, category: decor}
+  - {material: minecraft:waxed_exposed_copper_bulb, category: decor}
+  - {material: minecraft:waxed_weathered_copper_bulb, category: decor}
+  - {material: minecraft:waxed_oxidized_copper_bulb, category: decor}
+  - {material: minecraft:candle, category: decor}
+  - {material: minecraft:white_candle, category: decor}
+  - {material: minecraft:light_gray_candle, category: decor}
+  - {material: minecraft:gray_candle, category: decor}
+  - {material: minecraft:black_candle, category: decor}
+  - {material: minecraft:brown_candle, category: decor}
+  - {material: minecraft:red_candle, category: decor}
+  - {material: minecraft:orange_candle, category: decor}
+  - {material: minecraft:yellow_candle, category: decor}
+  - {material: minecraft:lime_candle, category: decor}
+  - {material: minecraft:green_candle, category: decor}
+  - {material: minecraft:cyan_candle, category: decor}
+  - {material: minecraft:light_blue_candle, category: decor}
+  - {material: minecraft:blue_candle, category: decor}
+  - {material: minecraft:purple_candle, category: decor}
+  - {material: minecraft:magenta_candle, category: decor}
+  - {material: minecraft:pink_candle, category: decor}
+  - {material: minecraft:campfire, category: decor}
+  - {material: minecraft:soul_campfire, category: decor}
+  - {material: minecraft:jack_o_lantern, category: decor}
+  - {material: minecraft:redstone_lamp, category: decor}
+  - {material: minecraft:flower_pot, category: decor}
+  - {material: minecraft:bookshelf, category: decor}
+  - {material: minecraft:lectern, category: decor}
+  - {material: minecraft:item_frame, category: decor}
+  - {material: minecraft:glow_item_frame, category: decor}
+  - {material: minecraft:armor_stand, category: decor}
+  - {material: minecraft:ladder, category: decor}
+  - {material: minecraft:scaffolding, category: decor}
+  - {material: minecraft:bell, category: decor}
+  - {material: minecraft:lodestone, category: decor}
+  - {material: minecraft:cobweb, category: decor}
+  # 画作
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:alban}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:aztec}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:aztec2}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:bomb}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:kebab}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:meditative}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:plant}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:wasteland}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:graham}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:prairie_ride}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:wanderer}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:courbet}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:creebet}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:pool}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:sea}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:sunset}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:baroque}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:bust}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:humble}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:match}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:skull_and_roses}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:stage}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:void}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:wither}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:changing}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:fighters}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:finding}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:lowmist}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:passage}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:bouquet}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:cavebird}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:cotan}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:dennis}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:endboss}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:fern}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:owlemons}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:sunflowers}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:tides}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:backyard}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:pond}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:donkey_kong}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:skeleton}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:burning_skull}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:orb}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:pigscene}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:pointer}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:unpacked}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:earth}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:wind}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:fire}
+  - {material: minecraft:painting, category: painting, painting-variant: minecraft:water}

@@ -22,7 +22,7 @@ dialog:
   balance: '背包兑换券：{amount} 张'
   amount: '使用券数'
   redeem: '兑换'
-  back: '返回目录'
+  back: '返回'
   result-title: '兑换结果'
   success: '&a已使用 {amount} 张券兑换 {count} 个{product}。'
   insufficient: '&c兑换券不足，需要 {amount} 张，背包中有 {count} 张。'

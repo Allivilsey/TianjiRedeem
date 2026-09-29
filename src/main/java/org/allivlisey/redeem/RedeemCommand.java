@@ -58,7 +58,7 @@ public final class RedeemCommand {
     @CommandPriority.Low
     @CommandPermission(value = "tianjiredeem.use", defaultAccess = PermissionDefault.TRUE)
     public void open(Player player, @Sized(max = 0) String[] extra) {
-        dialogs.openCatalog(player, 0);
+        dialogs.openCategories(player);
     }
 
     @Command("tianjiredeem give")
