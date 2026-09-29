@@ -180,13 +180,13 @@ class RedeemDialogsTest {
         openCatalog(java.util.Collections.nCopies(count, STONE));
         assertEquals(9, shownActions.columns());
         assertEquals(count, shownActions.actions().size());
-        Component tooltip = STONE.name().append(Component.newline()).append(Component.text("dialog.rate"));
         for (ActionButton button : shownActions.actions()) {
             assertEquals(20, button.width());
             assertEquals(STONE.icon(), button.label());
             assertInstanceOf(SpriteObjectContents.class, assertInstanceOf(ObjectComponent.class, button.label()).contents());
-            assertEquals(tooltip, button.tooltip());
+            assertEquals(STONE.name(), button.tooltip());
         }
+        verify(messages, never()).text("dialog.rate");
     }
 
     @Test
@@ -235,8 +235,8 @@ class RedeemDialogsTest {
         var painting = new RedeemProduct("stone", Material.PAINTING, Art.EARTH);
         openCatalog(List.of(painting));
         assertEquals(painting.icon(), shownActions.actions().getFirst().label());
-        assertEquals(painting.name().append(Component.newline()).append(Component.text(Art.EARTH.getKey().asString()))
-            .append(Component.newline()).append(Component.text("dialog.rate")), shownActions.actions().getFirst().tooltip());
+        assertEquals(painting.name().append(Component.newline()).append(Component.text(Art.EARTH.getKey().asString())),
+            shownActions.actions().getFirst().tooltip());
         click(shownActions.actions().getFirst(), null, player);
         verify(provider).itemDialogBodyBuilder(argThat(item -> item.getType() == Material.PAINTING
             && item.getData(DataComponentTypes.PAINTING_VARIANT) == Art.EARTH));

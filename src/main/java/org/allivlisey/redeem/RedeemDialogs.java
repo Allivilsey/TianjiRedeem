@@ -70,7 +70,6 @@ public final class RedeemDialogs {
             if (product.paintingVariant() != null) {
                 tooltip = tooltip.appendNewline().append(Component.text(product.paintingVariant().getKey().asString()));
             }
-            tooltip = tooltip.appendNewline().append(messages.text("dialog.rate"));
             actions.add(button(player, product.icon(), tooltip, 20,
                 (actor, response) -> openProduct(actor, product)));
         }
